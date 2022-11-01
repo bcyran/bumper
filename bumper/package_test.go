@@ -81,7 +81,7 @@ pkgbase = expected_name
 		Pkgver:  "expected_ver",
 		Pkgrel:  "expected_rel",
 	}
-	assert.Equal(t, expectedPackage, loadedPackage)
+	assert.Equal(t, expectedPackage, *loadedPackage)
 }
 
 func createPackage(path string, pkgbuild []byte, srcinfo []byte) {

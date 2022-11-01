@@ -21,12 +21,12 @@ type Package struct {
 }
 
 // Try to create `Package` struct based on given package dir path
-func LoadPackage(path string) (Package, error) {
+func LoadPackage(path string) (*Package, error) {
 	if err := validateIsDir(path); err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 	if err := validateIsPackage(path); err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 	return makePackage(path)
 }
@@ -65,36 +65,36 @@ func srcinfoPath(path string) string {
 }
 
 // Create `Package` struct based on given package path dir without any safety checks
-func makePackage(path string) (Package, error) {
+func makePackage(path string) (*Package, error) {
 	srcinfoBytes, err := os.ReadFile(srcinfoPath(path))
 	if err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 	srcinfoText := string(srcinfoBytes[:])
 	srcinfoReader := strings.NewReader(srcinfoText)
 
 	pkgname, err := readSrcinfoField(srcinfoReader, "pkgname")
 	if err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 	pkgver, err := readSrcinfoField(srcinfoReader, "pkgver")
 	if err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 	pkgrel, err := readSrcinfoField(srcinfoReader, "pkgrel")
 	if err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 	url, err := readSrcinfoField(srcinfoReader, "url")
 	if err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return Package{}, err
+		return &Package{}, err
 	}
 
-	return Package{
+	return &Package{
 		Path:    absPath,
 		Pkgname: pkgname,
 		Url:     url,
