@@ -12,16 +12,12 @@ import (
 
 const srcinfoSeparator = " = "
 
-type Version struct {
-	Pkgver string
-	Pkgrel string
-}
-
 type Package struct {
 	Path    string
 	Pkgname string
 	Url     string
-	*Version
+	Pkgver  string
+	Pkgrel  string
 }
 
 // Try to create `Package` struct based on given package dir path
@@ -102,10 +98,8 @@ func makePackage(path string) (Package, error) {
 		Path:    absPath,
 		Pkgname: pkgname,
 		Url:     url,
-		Version: &Version{
-			Pkgver: pkgver,
-			Pkgrel: pkgrel,
-		},
+		Pkgver:  pkgver,
+		Pkgrel:  pkgrel,
 	}, nil
 }
 

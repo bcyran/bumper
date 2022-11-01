@@ -78,10 +78,8 @@ pkgbase = expected_name
 		Path:    packagePath,
 		Pkgname: "expected_name",
 		Url:     "expected_url",
-		Version: &Version{
-			Pkgver: "expected_ver",
-			Pkgrel: "expected_rel",
-		},
+		Pkgver:  "expected_ver",
+		Pkgrel:  "expected_rel",
 	}
 	assert.Equal(t, expectedPackage, loadedPackage)
 }
