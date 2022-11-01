@@ -7,6 +7,7 @@ import (
 
 	"github.com/bcyran/bumper/bumper"
 	"github.com/urfave/cli/v2"
+	"github.com/bcyran/bumper/upstream"
 )
 
 const name = "bumper"
@@ -36,6 +37,16 @@ func Main(args []string) {
 			fmt.Printf("url: %s\n", loadedPackage.Url)
 			fmt.Printf("pkgver: %s\n", loadedPackage.Pkgver)
 			fmt.Printf("pkgrel: %s\n", loadedPackage.Pkgrel)
+
+			upstreamGithub := upstream.NewGitHub(loadedPackage.Url)
+			latestUpstreamVersion, err := upstreamGithub.LatestVersion()
+
+			if err != nil {
+				log.Fatal(err)
+				return nil
+			}
+
+			fmt.Printf("upstream version: %s\n", latestUpstreamVersion)
 			
 			return nil
 		},
