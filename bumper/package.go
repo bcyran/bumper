@@ -35,9 +35,11 @@ func LoadPackage(path string) (*Package, error) {
 func validateIsDir(path string) error {
 	fileInfo, err := os.Stat(path)
 	if os.IsNotExist(err) {
+		// TODO: Make those defined errors!
 		return errors.New("path doesn't exist or not accessible")
 	}
 	if !fileInfo.IsDir() {
+		// TODO: Make those defined errors!
 		return errors.New("not a directory")
 	}
 	return nil
@@ -46,9 +48,11 @@ func validateIsDir(path string) error {
 // Check if directory at given path is an AUR package
 func validateIsPackage(path string) error {
 	if _, err := os.Stat(pkgbuildPath(path)); os.IsNotExist(err) {
+		// TODO: Make those defined errors!
 		return errors.New("not a package: missing PKGBUILD")
 	}
 	if _, err := os.Stat(srcinfoPath(path)); os.IsNotExist(err) {
+		// TODO: Make those defined errors!
 		return errors.New("not a package: missing .SRCINFO")
 	}
 	return nil

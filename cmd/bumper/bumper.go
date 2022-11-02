@@ -6,16 +6,16 @@ import (
 	"log"
 
 	"github.com/bcyran/bumper/bumper"
+	"github.com/bcyran/bumper/version"
 	"github.com/urfave/cli/v2"
-	"github.com/bcyran/bumper/upstream"
 )
 
-const name = "bumper"
-const version = "0.0.0"
+const appName = "bumper"
+const appVersion = "0.0.0"
 
 func Main(args []string) {
 	app := &cli.App{
-		Name:  name,
+		Name:  appName,
 		Usage: "easily bump AUR package pkgver",
 		Action: func(ctx *cli.Context) error {
 			var path string
@@ -38,8 +38,8 @@ func Main(args []string) {
 			fmt.Printf("pkgver: %s\n", loadedPackage.Pkgver)
 			fmt.Printf("pkgrel: %s\n", loadedPackage.Pkgrel)
 
-			upstreamGithub := upstream.NewGitHub(loadedPackage.Url)
-			latestUpstreamVersion, err := upstreamGithub.LatestVersion()
+			gitHubVersionProvider := version.NewGitHubProvider(loadedPackage.Url)
+			latestUpstreamVersion, err := gitHubVersionProvider.LatestVersion()
 
 			if err != nil {
 				log.Fatal(err)
@@ -47,7 +47,7 @@ func Main(args []string) {
 			}
 
 			fmt.Printf("upstream version: %s\n", latestUpstreamVersion)
-			
+
 			return nil
 		},
 	}

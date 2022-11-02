@@ -1,4 +1,4 @@
-package upstream
+package version
 
 import (
 	"testing"
@@ -9,12 +9,12 @@ import (
 
 func TestNewGithub_Valid(t *testing.T) {
 	validUrl := "https://github.com/bcyran/timewall?foo=bar#whatever"
-	expectedResult := GitHub{
+	expectedResult := gitHubProvider{
 		owner: "bcyran",
 		repo:  "timewall",
 	}
 
-	result := NewGitHub(validUrl)
+	result := NewGitHubProvider(validUrl)
 
 	assert.Equal(t, expectedResult, *result)
 }
@@ -22,7 +22,7 @@ func TestNewGithub_Valid(t *testing.T) {
 func TestNewGithub_Invalid(t *testing.T) {
 	invalidUrl := "https://github.com/randompath"
 
-	result := NewGitHub(invalidUrl)
+	result := NewGitHubProvider(invalidUrl)
 
 	assert.Nil(t, result)
 }
@@ -53,7 +53,7 @@ func TestGithubLatestVersion_Release(t *testing.T) {
 			},
 		})
 
-	github := GitHub{owner: "foo", repo: "bar"}
+	github := gitHubProvider{owner: "foo", repo: "bar"}
 
 	result, err := github.LatestVersion()
 
@@ -75,7 +75,7 @@ func TestGithubLatestVersion_Tag(t *testing.T) {
 			{"name": "1.6.8"},
 		})
 
-	github := GitHub{owner: "foo", repo: "bar"}
+	github := gitHubProvider{owner: "foo", repo: "bar"}
 
 	result, err := github.LatestVersion()
 
@@ -94,7 +94,7 @@ func TestGithubLatestVersion_NoReleases(t *testing.T) {
 		Reply(200).
 		JSON([]interface{}{})
 
-	github := GitHub{owner: "foo", repo: "bar"}
+	github := gitHubProvider{owner: "foo", repo: "bar"}
 
 	result, err := github.LatestVersion()
 
@@ -113,7 +113,7 @@ func TestGithubLatestVersion_4xx(t *testing.T) {
 		Reply(401).
 		JSON([]interface{}{})
 
-	github := GitHub{owner: "foo", repo: "bar"}
+	github := gitHubProvider{owner: "foo", repo: "bar"}
 
 	result, err := github.LatestVersion()
 
@@ -132,10 +132,10 @@ func TestGithubLatestVersion_5xx(t *testing.T) {
 		Reply(501).
 		JSON([]interface{}{})
 
-	github := GitHub{owner: "foo", repo: "bar"}
+	github := gitHubProvider{owner: "foo", repo: "bar"}
 
 	result, err := github.LatestVersion()
 
-	assert.ErrorIs(t, err, ErrUpstreamError)
+	assert.ErrorIs(t, err, ErrProviderError)
 	assert.Equal(t, "", result)
 }

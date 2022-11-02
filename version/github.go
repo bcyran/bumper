@@ -1,4 +1,4 @@
-package upstream
+package version
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 
 const githubUrlRegex = "github.com/([^/#?]+)/([^/#?]+)"
 
-type GitHub struct {
+type gitHubProvider struct {
 	owner string
 	repo  string
 }
@@ -24,15 +24,15 @@ type githubTagResp struct {
 	Name string `json:"name"`
 }
 
-func NewGitHub(url string) *GitHub {
+func NewGitHubProvider(url string) *gitHubProvider {
 	match := regexp.MustCompile(githubUrlRegex).FindStringSubmatch(url)
 	if len(match) == 0 {
 		return nil
 	}
-	return &GitHub{match[1], match[2]}
+	return &gitHubProvider{match[1], match[2]}
 }
 
-func (github GitHub) LatestVersion() (string, error) {
+func (github gitHubProvider) LatestVersion() (string, error) {
 	latestReleaseVersion, err := github.latestReleaseVersion()
 	if err == nil {
 		return latestReleaseVersion, nil
@@ -45,7 +45,7 @@ func (github GitHub) LatestVersion() (string, error) {
 	return github.latestTagVersion()
 }
 
-func (github GitHub) latestReleaseVersion() (string, error) {
+func (github gitHubProvider) latestReleaseVersion() (string, error) {
 	var latestReleases []githubReleaseResp
 	if err := httpGetJSON(github.releasesURL(), &latestReleases); err != nil {
 		return "", err
@@ -75,11 +75,11 @@ func getLatestPublishedRelease(releases []githubReleaseResp) *githubReleaseResp 
 	return nil
 }
 
-func (github GitHub) releasesURL() string {
+func (github gitHubProvider) releasesURL() string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", github.owner, github.repo)
 }
 
-func (github GitHub) latestTagVersion() (string, error) {
+func (github gitHubProvider) latestTagVersion() (string, error) {
 	var latestTags []githubTagResp
 	if err := httpGetJSON(github.tagsURL(), &latestTags); err != nil {
 		return "", err
@@ -92,6 +92,6 @@ func (github GitHub) latestTagVersion() (string, error) {
 	return latestTags[0].Name, nil
 }
 
-func (github GitHub) tagsURL() string {
+func (github gitHubProvider) tagsURL() string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/tags", github.owner, github.repo)
 }

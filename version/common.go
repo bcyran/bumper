@@ -1,4 +1,4 @@
-package upstream
+package version
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 
 var (
 	ErrRequestError    = errors.New("request error")
-	ErrUpstreamError   = errors.New("upstream error")
+	ErrProviderError   = errors.New("version provider error")
 	ErrVersionNotFound = errors.New("upstream version not found")
 )
 
@@ -21,7 +21,7 @@ func httpGetJSON(url string, target interface{}) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusInternalServerError {
-		return fmt.Errorf("%w: status %d", ErrUpstreamError, resp.StatusCode)
+		return fmt.Errorf("%w: status %d", ErrProviderError, resp.StatusCode)
 	}
 
 	if resp.StatusCode != 200 {
