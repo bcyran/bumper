@@ -38,8 +38,8 @@ func Main(args []string) {
 			fmt.Printf("pkgver: %s\n", loadedPackage.Pkgver)
 			fmt.Printf("pkgrel: %s\n", loadedPackage.Pkgrel)
 
-			gitHubVersionProvider := version.NewGitHubProvider(loadedPackage.Url)
-			latestUpstreamVersion, err := gitHubVersionProvider.LatestVersion()
+			versionProvider := version.NewVersionProvider(loadedPackage.Url)
+			latestUpstreamVersion, err := versionProvider.LatestVersion()
 
 			if err != nil {
 				log.Fatal(err)

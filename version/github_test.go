@@ -14,7 +14,7 @@ func TestNewGithub_Valid(t *testing.T) {
 		repo:  "timewall",
 	}
 
-	result := NewGitHubProvider(validUrl)
+	result := newGitHubProvider(validUrl)
 
 	assert.Equal(t, expectedResult, *result)
 }
@@ -22,7 +22,7 @@ func TestNewGithub_Valid(t *testing.T) {
 func TestNewGithub_Invalid(t *testing.T) {
 	invalidUrl := "https://github.com/randompath"
 
-	result := NewGitHubProvider(invalidUrl)
+	result := newGitHubProvider(invalidUrl)
 
 	assert.Nil(t, result)
 }

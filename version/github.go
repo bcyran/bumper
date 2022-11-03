@@ -25,7 +25,7 @@ type githubTagResp struct {
 	Name string `json:"name"`
 }
 
-func NewGitHubProvider(url string) *gitHubProvider {
+func newGitHubProvider(url string) *gitHubProvider {
 	match := regexp.MustCompile(githubUrlRegex).FindStringSubmatch(url)
 	if len(match) == 0 {
 		return nil
