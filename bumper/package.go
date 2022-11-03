@@ -26,7 +26,7 @@ type Package struct {
 	Pkgrel  string
 }
 
-// Try to create `Package` struct based on given package dir path
+// LoadPackage tries to create Package struct based on given package dir path.
 func LoadPackage(path string) (*Package, error) {
 	if err := validateIsDir(path); err != nil {
 		return &Package{}, err
@@ -37,7 +37,7 @@ func LoadPackage(path string) (*Package, error) {
 	return makePackage(path)
 }
 
-// Check if given path leads to an existing directory
+// validateIsDir checks whatever given path leads to an existing directory.
 func validateIsDir(path string) error {
 	fileInfo, err := os.Stat(path)
 	if os.IsNotExist(err) {
@@ -49,7 +49,7 @@ func validateIsDir(path string) error {
 	return nil
 }
 
-// Check if directory at given path is an AUR package
+// validateIsPackage checks whatever the directory at given path is an AUR package.
 func validateIsPackage(path string) error {
 	if _, err := os.Stat(pkgbuildPath(path)); os.IsNotExist(err) {
 		return fmt.Errorf("%w: missing PKGBUILD", ErrNotAPackage)
@@ -60,17 +60,17 @@ func validateIsPackage(path string) error {
 	return nil
 }
 
-// Get path to PKGBUILD given package root path
+// pkgbuildPath returns path to PKGBUILD given package root path.
 func pkgbuildPath(path string) string {
 	return filepath.Join(path, "PKGBUILD")
 }
 
-// Get path to .SRCINFO given package root path
+// srcinfoPath returns path to .SRCINFO given package root path.
 func srcinfoPath(path string) string {
 	return filepath.Join(path, ".SRCINFO")
 }
 
-// Create `Package` struct based on given package path dir without any safety checks
+// makePackage creates Package struct based on given package path dir without any safety checks.
 func makePackage(path string) (*Package, error) {
 	srcinfoBytes, err := os.ReadFile(srcinfoPath(path))
 	if err != nil {
@@ -109,7 +109,7 @@ func makePackage(path string) (*Package, error) {
 	}, nil
 }
 
-// Get the value of a field with the given name from .SRCINFO contents reader
+// readSrcinfoField returns the value of a field with the given name from .SRCINFO contents reader.
 func readSrcinfoField(srcinfo io.ReadSeeker, field string) (string, error) {
 	srcinfo.Seek(0, 0)
 	scanner := bufio.NewScanner(srcinfo)
