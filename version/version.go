@@ -30,7 +30,7 @@ func containsDigit(str string) bool {
 }
 
 type VersionProvider interface {
-	LatestVersion() (string, error)
+	LatestVersion() (Version, error)
 }
 
 func NewVersionProvider(url string) VersionProvider {

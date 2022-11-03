@@ -32,7 +32,7 @@ func NewGitHubProvider(url string) *gitHubProvider {
 	return &gitHubProvider{match[1], match[2]}
 }
 
-func (github gitHubProvider) LatestVersion() (string, error) {
+func (github gitHubProvider) LatestVersion() (Version, error) {
 	latestReleaseVersion, err := github.latestReleaseVersion()
 	if err == nil {
 		return latestReleaseVersion, nil
@@ -45,51 +45,44 @@ func (github gitHubProvider) LatestVersion() (string, error) {
 	return github.latestTagVersion()
 }
 
-func (github gitHubProvider) latestReleaseVersion() (string, error) {
+func (github gitHubProvider) latestReleaseVersion() (Version, error) {
 	var latestReleases []githubReleaseResp
 	if err := httpGetJSON(github.releasesURL(), &latestReleases); err != nil {
 		return "", err
 	}
 
-	latestRelease := getLatestPublishedRelease(latestReleases)
-	if latestRelease == nil {
-		return "", ErrVersionNotFound
-	}
-
-	if latestRelease.TagName != "" {
-		return latestRelease.TagName, nil
-	}
-	if latestRelease.Name != "" {
-		return latestRelease.Name, nil
+	for _, release := range latestReleases {
+		if release.Draft || release.Prerelease {
+			continue
+		}
+		if version, isValid := parseVersion(release.TagName); isValid == true {
+			return version, nil
+		}
+		if version, isValid := parseVersion(release.Name); isValid == true {
+			return version, nil
+		}
 	}
 
 	return "", ErrVersionNotFound
-}
-
-func getLatestPublishedRelease(releases []githubReleaseResp) *githubReleaseResp {
-	for _, release := range releases {
-		if !release.Draft && !release.Prerelease {
-			return &release
-		}
-	}
-	return nil
 }
 
 func (github gitHubProvider) releasesURL() string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", github.owner, github.repo)
 }
 
-func (github gitHubProvider) latestTagVersion() (string, error) {
+func (github gitHubProvider) latestTagVersion() (Version, error) {
 	var latestTags []githubTagResp
 	if err := httpGetJSON(github.tagsURL(), &latestTags); err != nil {
 		return "", err
 	}
 
-	if len(latestTags) == 0 {
-		return "", ErrVersionNotFound
+	for _, tag := range latestTags {
+		if version, isValid := parseVersion(tag.Name); isValid == true {
+			return version, nil
+		}
 	}
 
-	return latestTags[0].Name, nil
+	return "", ErrVersionNotFound
 }
 
 func (github gitHubProvider) tagsURL() string {

@@ -46,6 +46,12 @@ func TestGithubLatestVersion_Release(t *testing.T) {
 				"draft":      false,
 			},
 			{
+				"name":       "Release?",
+				"tag_name":   "not-a-version!",
+				"prerelease": false,
+				"draft":      false,
+			},
+			{
 				"name":       "Foo",
 				"tag_name":   "1.6.9",
 				"prerelease": false,
@@ -58,7 +64,7 @@ func TestGithubLatestVersion_Release(t *testing.T) {
 	result, err := github.LatestVersion()
 
 	assert.NoError(t, err)
-	assert.Equal(t, "1.6.9", result)
+	assert.Equal(t, Version("1.6.9"), result)
 }
 
 func TestGithubLatestVersion_Tag(t *testing.T) {
@@ -71,6 +77,7 @@ func TestGithubLatestVersion_Tag(t *testing.T) {
 		Get("/repos/foo/bar/tags").
 		Reply(200).
 		JSON([]map[string]interface{}{
+			{"name": "what-is-this?"},
 			{"name": "1.6.9"},
 			{"name": "1.6.8"},
 		})
@@ -80,7 +87,7 @@ func TestGithubLatestVersion_Tag(t *testing.T) {
 	result, err := github.LatestVersion()
 
 	assert.NoError(t, err)
-	assert.Equal(t, "1.6.9", result)
+	assert.Equal(t, Version("1.6.9"), result)
 }
 
 func TestGithubLatestVersion_NoReleases(t *testing.T) {
@@ -96,10 +103,9 @@ func TestGithubLatestVersion_NoReleases(t *testing.T) {
 
 	github := gitHubProvider{owner: "foo", repo: "bar"}
 
-	result, err := github.LatestVersion()
+	_, err := github.LatestVersion()
 
 	assert.ErrorIs(t, err, ErrVersionNotFound)
-	assert.Equal(t, "", result)
 }
 
 func TestGithubLatestVersion_4xx(t *testing.T) {
@@ -115,10 +121,9 @@ func TestGithubLatestVersion_4xx(t *testing.T) {
 
 	github := gitHubProvider{owner: "foo", repo: "bar"}
 
-	result, err := github.LatestVersion()
+	_, err := github.LatestVersion()
 
 	assert.ErrorIs(t, err, ErrVersionNotFound)
-	assert.Equal(t, "", result)
 }
 
 func TestGithubLatestVersion_5xx(t *testing.T) {
@@ -134,8 +139,7 @@ func TestGithubLatestVersion_5xx(t *testing.T) {
 
 	github := gitHubProvider{owner: "foo", repo: "bar"}
 
-	result, err := github.LatestVersion()
+	_, err := github.LatestVersion()
 
 	assert.ErrorIs(t, err, ErrProviderError)
-	assert.Equal(t, "", result)
 }
