@@ -13,6 +13,8 @@ var (
 	ErrVersionNotFound = errors.New("upstream version not found")
 )
 
+// httpGetJSON sends HTTP GET request to the given URL and writes JSON response to target struct.
+// Returns error if the request of JSON decoding fails.
 func httpGetJSON(url string, target interface{}) error {
 	resp, err := http.Get(url)
 	if err != nil {

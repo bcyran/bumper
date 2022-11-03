@@ -8,6 +8,7 @@ import (
 
 const githubUrlRegex = "github.com/([^/#?]+)/([^/#?]+)"
 
+// gitHubProvider tries to find the latest version both in releases and tags of a GitHub repo.
 type gitHubProvider struct {
 	owner string
 	repo  string
