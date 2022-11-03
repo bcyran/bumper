@@ -14,7 +14,8 @@ func TestLoadPackage_PathNotExisting(t *testing.T) {
 
 	_, err := LoadPackage(notExistingPath)
 
-	assert.ErrorContains(t, err, "path doesn't exist")
+	assert.ErrorIs(t, err, ErrInvalidPath)
+	assert.ErrorContains(t, err, "doesn't exist")
 }
 
 func TestLoadPackage_PathNotDirectory(t *testing.T) {
@@ -23,6 +24,7 @@ func TestLoadPackage_PathNotDirectory(t *testing.T) {
 
 	_, err := LoadPackage(notDirectoryPath)
 
+	assert.ErrorIs(t, err, ErrInvalidPath)
 	assert.ErrorContains(t, err, "not a directory")
 }
 
@@ -32,6 +34,7 @@ func TestLoadPackage_PathNoPkbuild(t *testing.T) {
 
 	_, err := LoadPackage(noPkgbuildPath)
 
+	assert.ErrorIs(t, err, ErrNotAPackage)
 	assert.ErrorContains(t, err, "missing PKGBUILD")
 }
 
@@ -42,6 +45,7 @@ func TestLoadPackage_PathNoSrcinfo(t *testing.T) {
 
 	_, err := LoadPackage(noSrcinfoPath)
 
+	assert.ErrorIs(t, err, ErrNotAPackage)
 	assert.ErrorContains(t, err, "missing .SRCINFO")
 }
 
@@ -57,6 +61,7 @@ pkgbase = foo
 
 	_, err := LoadPackage(packagePath)
 
+	assert.ErrorIs(t, err, ErrInvalidSrcinfo)
 	assert.ErrorContains(t, err, "missing 'pkgver' field")
 }
 

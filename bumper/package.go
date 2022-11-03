@@ -12,6 +12,12 @@ import (
 
 const srcinfoSeparator = " = "
 
+var (
+	ErrInvalidPath    = errors.New("invalid package path")
+	ErrNotAPackage    = errors.New("not a package")
+	ErrInvalidSrcinfo = errors.New("invalid .SRCINFO")
+)
+
 type Package struct {
 	Path    string
 	Pkgname string
@@ -35,12 +41,10 @@ func LoadPackage(path string) (*Package, error) {
 func validateIsDir(path string) error {
 	fileInfo, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		// TODO: Make those defined errors!
-		return errors.New("path doesn't exist or not accessible")
+		return fmt.Errorf("%w: doesn't exist or not accessible", ErrInvalidPath)
 	}
 	if !fileInfo.IsDir() {
-		// TODO: Make those defined errors!
-		return errors.New("not a directory")
+		return fmt.Errorf("%w: not a directory", ErrInvalidPath)
 	}
 	return nil
 }
@@ -48,12 +52,10 @@ func validateIsDir(path string) error {
 // Check if directory at given path is an AUR package
 func validateIsPackage(path string) error {
 	if _, err := os.Stat(pkgbuildPath(path)); os.IsNotExist(err) {
-		// TODO: Make those defined errors!
-		return errors.New("not a package: missing PKGBUILD")
+		return fmt.Errorf("%w: missing PKGBUILD", ErrNotAPackage)
 	}
 	if _, err := os.Stat(srcinfoPath(path)); os.IsNotExist(err) {
-		// TODO: Make those defined errors!
-		return errors.New("not a package: missing .SRCINFO")
+		return fmt.Errorf("%w: missing .SRCINFO", ErrNotAPackage)
 	}
 	return nil
 }
@@ -119,5 +121,5 @@ func readSrcinfoField(srcinfo io.ReadSeeker, field string) (string, error) {
 			return split[1], nil
 		}
 	}
-	return "", fmt.Errorf("SRCINFO missing '%s' field", field)
+	return "", fmt.Errorf("%w: missing '%s' field", ErrInvalidSrcinfo, field)
 }
