@@ -90,7 +90,7 @@ pkgbase = expected_name
 }
 
 func createPackage(path string, pkgbuild []byte, srcinfo []byte) {
-	os.Mkdir(path, 0755)
+	os.MkdirAll(path, 0755)
 	ioutil.WriteFile(filepath.Join(path, "PKGBUILD"), pkgbuild, 0644)
 	ioutil.WriteFile(filepath.Join(path, ".SRCINFO"), srcinfo, 0644)
 }
