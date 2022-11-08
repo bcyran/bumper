@@ -1,29 +1,20 @@
 package bumper
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
-const srcinfoSeparator = " = "
-
 var (
-	ErrInvalidPath    = errors.New("invalid package path")
-	ErrNotAPackage    = errors.New("not a package")
-	ErrInvalidSrcinfo = errors.New("invalid .SRCINFO")
+	ErrInvalidPath = errors.New("invalid package path")
+	ErrNotAPackage = errors.New("not a package")
 )
 
 type Package struct {
-	Path    string
-	Pkgname string
-	Url     string
-	Pkgver  string
-	Pkgrel  string
+	Path string
+	*Srcinfo
 }
 
 // LoadPackage tries to create Package struct based on given package dir path.
@@ -72,54 +63,15 @@ func srcinfoPath(path string) string {
 
 // makePackage creates Package struct based on given package path dir without any safety checks.
 func makePackage(path string) (*Package, error) {
-	srcinfoBytes, err := os.ReadFile(srcinfoPath(path))
+	srcinfo, err := ParseSrcinfo(srcinfoPath(path))
 	if err != nil {
 		return &Package{}, err
 	}
-	srcinfoText := string(srcinfoBytes[:])
-	srcinfoReader := strings.NewReader(srcinfoText)
 
-	pkgname, err := readSrcinfoField(srcinfoReader, "pkgname")
-	if err != nil {
-		return &Package{}, err
-	}
-	pkgver, err := readSrcinfoField(srcinfoReader, "pkgver")
-	if err != nil {
-		return &Package{}, err
-	}
-	pkgrel, err := readSrcinfoField(srcinfoReader, "pkgrel")
-	if err != nil {
-		return &Package{}, err
-	}
-	url, err := readSrcinfoField(srcinfoReader, "url")
-	if err != nil {
-		return &Package{}, err
-	}
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return &Package{}, err
 	}
 
-	return &Package{
-		Path:    absPath,
-		Pkgname: pkgname,
-		Url:     url,
-		Pkgver:  pkgver,
-		Pkgrel:  pkgrel,
-	}, nil
-}
-
-// readSrcinfoField returns the value of a field with the given name from .SRCINFO contents reader.
-func readSrcinfoField(srcinfo io.ReadSeeker, field string) (string, error) {
-	srcinfo.Seek(0, 0)
-	scanner := bufio.NewScanner(srcinfo)
-	searchToken := strings.Join([]string{field, srcinfoSeparator}, "")
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.Contains(line, searchToken) {
-			split := strings.SplitN(line, srcinfoSeparator, 2)
-			return split[1], nil
-		}
-	}
-	return "", fmt.Errorf("%w: missing '%s' field", ErrInvalidSrcinfo, field)
+	return &Package{Path: absPath, Srcinfo: srcinfo}, nil
 }

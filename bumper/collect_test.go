@@ -23,7 +23,7 @@ pkgbase = %s
 func packagesNames(packages []Package) []string {
 	names := []string{}
 	for _, pack := range packages {
-		names = append(names, pack.Pkgname)
+		names = append(names, pack.Pkgbase)
 	}
 	return names
 }

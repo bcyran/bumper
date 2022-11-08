@@ -9,6 +9,34 @@ import (
 	"path/filepath"
 )
 
+func TestLoadPackage_Valid(t *testing.T) {
+	packagePath := filepath.Join(t.TempDir(), "package")
+	srcinfo := []byte(`
+pkgbase = expected_name
+        pkgname = expected_name
+        url = expected_url
+        pkgver = expected_ver
+        pkgrel = expected_rel
+`)
+	createPackage(packagePath, []byte{}, srcinfo)
+
+	loadedPackage, err := LoadPackage(packagePath)
+
+	assert.NoError(t, err)
+	expectedPackage := Package{
+		Path: packagePath,
+		Srcinfo: &Srcinfo{
+			Pkgbase: "expected_name",
+			Url:     "expected_url",
+			Version: &Version{
+				Pkgver: "expected_ver",
+				Pkgrel: "expected_rel",
+			},
+		},
+	}
+	assert.Equal(t, expectedPackage, *loadedPackage)
+}
+
 func TestLoadPackage_PathNotExisting(t *testing.T) {
 	notExistingPath := filepath.Join(t.TempDir(), "not_existing")
 
@@ -47,46 +75,6 @@ func TestLoadPackage_PathNoSrcinfo(t *testing.T) {
 
 	assert.ErrorIs(t, err, ErrNotAPackage)
 	assert.ErrorContains(t, err, "missing .SRCINFO")
-}
-
-func TestLoadPackage_MissingSrcinfoField(t *testing.T) {
-	packagePath := filepath.Join(t.TempDir(), "package")
-	srcinfo := []byte(`
-pkgbase = foo
-        pkgname = bar
-        url = boo
-        pkgrel =  baz
-`)
-	createPackage(packagePath, []byte{}, srcinfo)
-
-	_, err := LoadPackage(packagePath)
-
-	assert.ErrorIs(t, err, ErrInvalidSrcinfo)
-	assert.ErrorContains(t, err, "missing 'pkgver' field")
-}
-
-func TestLoadPackage_CorrectSrcinfo(t *testing.T) {
-	packagePath := filepath.Join(t.TempDir(), "package")
-	srcinfo := []byte(`
-pkgbase = expected_name
-        pkgname = expected_name
-        url = expected_url
-        pkgver = expected_ver
-        pkgrel = expected_rel
-`)
-	createPackage(packagePath, []byte{}, srcinfo)
-
-	loadedPackage, err := LoadPackage(packagePath)
-
-	assert.NoError(t, err)
-	expectedPackage := Package{
-		Path:    packagePath,
-		Pkgname: "expected_name",
-		Url:     "expected_url",
-		Pkgver:  "expected_ver",
-		Pkgrel:  "expected_rel",
-	}
-	assert.Equal(t, expectedPackage, *loadedPackage)
 }
 
 func createPackage(path string, pkgbuild []byte, srcinfo []byte) {

@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/bcyran/bumper/bumper"
-	"github.com/bcyran/bumper/version"
 	"github.com/urfave/cli/v2"
 )
 
@@ -27,26 +26,14 @@ func Main(args []string) {
 			default:
 				return errors.New("Too many arguments, only one path allowed")
 			}
-			loadedPackage, err := bumper.LoadPackage(path)
-			if err != nil {
-				return fmt.Errorf("Not a valid package: %s\n", err)
-			}
-			fmt.Printf("Package:\n")
-			fmt.Printf("path: %s\n", loadedPackage.Path)
-			fmt.Printf("pkgname: %s\n", loadedPackage.Pkgname)
-			fmt.Printf("url: %s\n", loadedPackage.Url)
-			fmt.Printf("pkgver: %s\n", loadedPackage.Pkgver)
-			fmt.Printf("pkgrel: %s\n", loadedPackage.Pkgrel)
 
-			versionProvider := version.NewVersionProvider(loadedPackage.Url)
-			latestUpstreamVersion, err := versionProvider.LatestVersion()
-
+			packages, err := bumper.CollectPackages(path, 1)
 			if err != nil {
 				log.Fatal(err)
-				return nil
 			}
-
-			fmt.Printf("upstream version: %s\n", latestUpstreamVersion)
+			for _, pack := range packages {
+				fmt.Printf("- %s (%s)\n", pack.Pkgbase, pack.Pkgver)
+			}
 
 			return nil
 		},
