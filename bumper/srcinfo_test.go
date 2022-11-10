@@ -25,7 +25,7 @@ pkgbase = expected_base
 	expectedSrcinfo := Srcinfo{
 		Pkgbase: "expected_base",
 		Url:     "expected_url",
-		Version: &Version{
+		FullVersion: &FullVersion{
 			Pkgver: "expected_ver",
 			Pkgrel: "expected_rel",
 		},

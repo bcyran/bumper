@@ -16,7 +16,7 @@ type rawSrcinfo map[string][]string
 
 var ErrInvalidSrcinfo = errors.New("invalid .SRCINFO")
 
-type Version struct {
+type FullVersion struct {
 	Pkgver string
 	Pkgrel string
 }
@@ -24,7 +24,7 @@ type Version struct {
 type Srcinfo struct {
 	Pkgbase string
 	Url     string
-	*Version
+	*FullVersion
 }
 
 // ParseSrcinfo creates Srcinfo struct from .SRCINFO file at given path.
@@ -43,7 +43,7 @@ func ParseSrcinfo(path string) (*Srcinfo, error) {
 	srcinfo := Srcinfo{
 		Pkgbase: rawInfo["pkgbase"][0],
 		Url:     rawInfo["url"][0],
-		Version: &Version{
+		FullVersion: &FullVersion{
 			Pkgver: rawInfo["pkgver"][0],
 			Pkgrel: rawInfo["pkgrel"][0],
 		},
