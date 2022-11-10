@@ -1,6 +1,6 @@
-// Package version implements logic for retrieving latest released software versions
-// based on this software source URL.
-package version
+// Package upstream implements logic for retrieving latest released software versions
+// based on this software upstream source URL.
+package upstream
 
 import (
 	"regexp"

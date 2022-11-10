@@ -1,4 +1,4 @@
-package version
+package upstream
 
 // VersionProvider tries to find the latest software version based on its source URL.
 type VersionProvider interface {
