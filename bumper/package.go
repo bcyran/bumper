@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/bcyran/bumper/upstream"
 )
 
 var (
@@ -13,8 +15,9 @@ var (
 )
 
 type Package struct {
-	Path string
 	*Srcinfo
+	Path            string
+	UpstreamVersion upstream.Version
 }
 
 // LoadPackage tries to create Package struct based on given package dir path.
