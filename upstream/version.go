@@ -10,6 +10,10 @@ import (
 // Version represents the software version as returned by some VersionProvider.
 type Version string
 
+func (v Version) GetVersionStr() string {
+	return string(v)
+}
+
 var versionRegexp = regexp.MustCompile(`^[\w.]+$`)
 
 // parseVersion makes Version from a string.

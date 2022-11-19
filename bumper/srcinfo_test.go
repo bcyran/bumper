@@ -26,7 +26,7 @@ pkgbase = expected_base
 		Pkgbase: "expected_base",
 		Url:     "expected_url",
 		FullVersion: &FullVersion{
-			Pkgver: "expected_ver",
+			Pkgver: Version("expected_ver"),
 			Pkgrel: "expected_rel",
 		},
 	}

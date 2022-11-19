@@ -5,6 +5,18 @@ import (
 	"unicode"
 )
 
+// VersionLike is an interface for structs that can be treated as a version.
+type VersionLike interface {
+	// GetVersionStr returns the version represented by VersionLike as string.
+	GetVersionStr() string
+}
+
+// VersionCmp compares two VersionLike structs.
+// Returns 1 if a is newer than b, 0 if a and b are the same version, -1 if b is newer than a.
+func VersionCmp(a, b VersionLike) int {
+	return Rpmvercmp(a.GetVersionStr(), b.GetVersionStr())
+}
+
 // Rpmvercmp compares a and b version strings.
 // Returns 1 if a is newer than b, 0 if a and b are the same version, -1 if b is newer than a.
 // Tries to mimick behavior of rpmvercmp from libalpm: https://gitlab.archlinux.org/pacman/pacman/-/blob/master/lib/libalpm/version.c.
