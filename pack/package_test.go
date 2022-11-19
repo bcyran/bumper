@@ -1,12 +1,12 @@
-package bumper
+package pack
 
 import (
-	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/bcyran/bumper/internal/testutils"
 	"github.com/stretchr/testify/assert"
-	"path/filepath"
 )
 
 func TestLoadPackage_Valid(t *testing.T) {
@@ -18,7 +18,7 @@ pkgbase = expected_name
         pkgver = expected_ver
         pkgrel = expected_rel
 `)
-	createPackage(packagePath, []byte{}, srcinfo)
+	testutils.CreatePackage(packagePath, []byte{}, srcinfo)
 
 	loadedPackage, err := LoadPackage(packagePath)
 
@@ -75,10 +75,4 @@ func TestLoadPackage_PathNoSrcinfo(t *testing.T) {
 
 	assert.ErrorIs(t, err, ErrNotAPackage)
 	assert.ErrorContains(t, err, "missing .SRCINFO")
-}
-
-func createPackage(path string, pkgbuild []byte, srcinfo []byte) {
-	os.MkdirAll(path, 0755)
-	ioutil.WriteFile(filepath.Join(path, "PKGBUILD"), pkgbuild, 0644)
-	ioutil.WriteFile(filepath.Join(path, ".SRCINFO"), srcinfo, 0644)
 }

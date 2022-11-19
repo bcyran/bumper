@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bcyran/bumper/internal/testutils"
+	"github.com/bcyran/bumper/pack"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,10 +19,10 @@ pkgbase = %s
         pkgver = some_ver
         pkgrel = some_rel
 `, name, name)
-	createPackage(path, []byte{}, []byte(srcinfo))
+	testutils.CreatePackage(path, []byte{}, []byte(srcinfo))
 }
 
-func packagesNames(packages []Package) []string {
+func packagesNames(packages []pack.Package) []string {
 	names := []string{}
 	for _, pack := range packages {
 		names = append(names, pack.Pkgbase)
@@ -68,7 +70,7 @@ func TestCollectPackages_Error(t *testing.T) {
 
 	for _, depth := range cases {
 		_, err := CollectPackages(filePath, depth)
-		assert.ErrorIs(t, err, ErrInvalidPath)
+		assert.ErrorIs(t, err, pack.ErrInvalidPath)
 		assert.ErrorContains(t, err, "not a directory")
 	}
 }

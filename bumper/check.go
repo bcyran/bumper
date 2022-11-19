@@ -3,11 +3,12 @@ package bumper
 import (
 	"sync"
 
+	"github.com/bcyran/bumper/pack"
 	"github.com/bcyran/bumper/upstream"
 )
 
 // CheckPackages tries to fetch the latest upstream version for slice of packages.
-func CheckPackages(packages []Package) {
+func CheckPackages(packages []pack.Package) {
 	var wg sync.WaitGroup
 	for idx := range packages {
 		wg.Add(1)
@@ -16,7 +17,7 @@ func CheckPackages(packages []Package) {
 	wg.Wait()
 }
 
-func checkPackage(pack *Package, wg *sync.WaitGroup) {
+func checkPackage(pack *pack.Package, wg *sync.WaitGroup) {
 	defer wg.Done()
 	provider := upstream.NewVersionProvider(pack.Url)
 	if provider != nil {
