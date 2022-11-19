@@ -1,29 +1,52 @@
 package bumper
 
 import (
-	"sync"
+	"fmt"
 
 	"github.com/bcyran/bumper/pack"
 	"github.com/bcyran/bumper/upstream"
 )
 
-// CheckPackages tries to fetch the latest upstream version for slice of packages.
-func CheckPackages(packages []pack.Package) {
-	var wg sync.WaitGroup
-	for idx := range packages {
-		wg.Add(1)
-		go checkPackage(&packages[idx], &wg)
-	}
-	wg.Wait()
+type checkActionResult struct {
+	BaseActionResult
+	currentVersion  pack.Version
+	upstreamVersion upstream.Version
+	cmpResult       int
 }
 
-func checkPackage(pack *pack.Package, wg *sync.WaitGroup) {
-	defer wg.Done()
-	provider := upstream.NewVersionProvider(pack.Url)
-	if provider != nil {
-		upstreamVersion, err := provider.LatestVersion()
-		if err == nil {
-			pack.UpstreamVersion = upstreamVersion
-		}
+func (result checkActionResult) String() string {
+	if result.Status == ACTION_FAILED {
+		return "x"
+	}
+	if result.Status == ACTION_SKIPPED {
+		return "-"
+	}
+	if result.cmpResult == 1 {
+		return fmt.Sprintf("%s -> %s", result.currentVersion, result.upstreamVersion)
+	} else if result.cmpResult == 0 {
+		return fmt.Sprintf("%s ✓", result.currentVersion)
+	} else {
+		return fmt.Sprintf("%s < %s !", result.currentVersion, result.upstreamVersion)
+	}
+}
+
+type CheckAction struct{}
+
+func (a *CheckAction) Execute(pkg *pack.Package) ActionResult {
+	provider := upstream.NewVersionProvider(pkg.Url)
+	if provider == nil {
+		return checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
+	}
+	upstreamVersion, err := provider.LatestVersion()
+	if err != nil {
+		return checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
+	}
+	cmpResult := pack.VersionCmp(upstreamVersion, pkg.Pkgver)
+	pkg.UpstreamVersion = upstreamVersion
+	return checkActionResult{
+		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+		currentVersion:   pkg.Pkgver,
+		upstreamVersion:  upstreamVersion,
+		cmpResult:        cmpResult,
 	}
 }
