@@ -8,5 +8,9 @@ type VersionProvider interface {
 // NewVersionProvider tries to create a VersionProvider instance for a given URL.
 // Returns nil if there's no suitable provider.
 func NewVersionProvider(url string) VersionProvider {
-	return newGitHubProvider(url)
+	gitHubProvider := newGitHubProvider(url)
+	if gitHubProvider != nil {
+		return gitHubProvider
+	}
+	return nil
 }

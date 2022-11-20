@@ -33,7 +33,7 @@ func newGitHubProvider(url string) *gitHubProvider {
 	return &gitHubProvider{match[1], match[2]}
 }
 
-func (github gitHubProvider) LatestVersion() (Version, error) {
+func (github *gitHubProvider) LatestVersion() (Version, error) {
 	latestReleaseVersion, err := github.latestReleaseVersion()
 	if err == nil {
 		return latestReleaseVersion, nil
@@ -46,7 +46,7 @@ func (github gitHubProvider) LatestVersion() (Version, error) {
 	return github.latestTagVersion()
 }
 
-func (github gitHubProvider) latestReleaseVersion() (Version, error) {
+func (github *gitHubProvider) latestReleaseVersion() (Version, error) {
 	var latestReleases []githubReleaseResp
 	if err := httpGetJSON(github.releasesURL(), &latestReleases); err != nil {
 		return "", err
@@ -67,11 +67,11 @@ func (github gitHubProvider) latestReleaseVersion() (Version, error) {
 	return "", ErrVersionNotFound
 }
 
-func (github gitHubProvider) releasesURL() string {
+func (github *gitHubProvider) releasesURL() string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", github.owner, github.repo)
 }
 
-func (github gitHubProvider) latestTagVersion() (Version, error) {
+func (github *gitHubProvider) latestTagVersion() (Version, error) {
 	var latestTags []githubTagResp
 	if err := httpGetJSON(github.tagsURL(), &latestTags); err != nil {
 		return "", err
@@ -86,6 +86,6 @@ func (github gitHubProvider) latestTagVersion() (Version, error) {
 	return "", ErrVersionNotFound
 }
 
-func (github gitHubProvider) tagsURL() string {
+func (github *gitHubProvider) tagsURL() string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/tags", github.owner, github.repo)
 }
