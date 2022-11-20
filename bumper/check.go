@@ -30,10 +30,18 @@ func (result checkActionResult) String() string {
 	}
 }
 
-type CheckAction struct{}
+type versionProviderFactory func(string) upstream.VersionProvider
 
-func (a *CheckAction) Execute(pkg *pack.Package) ActionResult {
-	provider := upstream.NewVersionProvider(pkg.Url)
+type CheckAction struct {
+	versionProviderFactory versionProviderFactory
+}
+
+func NewCheckAction(versionProviderFactory versionProviderFactory) *CheckAction {
+	return &CheckAction{versionProviderFactory: versionProviderFactory}
+}
+
+func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
+	provider := action.versionProviderFactory(pkg.Url)
 	if provider == nil {
 		return checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
 	}
