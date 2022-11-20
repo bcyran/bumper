@@ -40,18 +40,18 @@ func NewCheckAction(versionProviderFactory versionProviderFactory) *CheckAction 
 	return &CheckAction{versionProviderFactory: versionProviderFactory}
 }
 
-func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
+func (action *CheckAction) Execute(pkg *pack.Package) *checkActionResult {
 	provider := action.versionProviderFactory(pkg.Url)
 	if provider == nil {
-		return checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
+		return &checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
 	}
 	upstreamVersion, err := provider.LatestVersion()
 	if err != nil {
-		return checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
+		return &checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
 	}
 	cmpResult := pack.VersionCmp(upstreamVersion, pkg.Pkgver)
 	pkg.UpstreamVersion = upstreamVersion
-	return checkActionResult{
+	return &checkActionResult{
 		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 		currentVersion:   pkg.Pkgver,
 		upstreamVersion:  upstreamVersion,

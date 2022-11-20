@@ -25,6 +25,6 @@ type BaseActionResult struct {
 	Status ActionStatus
 }
 
-func (result BaseActionResult) GetStatus() ActionStatus {
+func (result *BaseActionResult) GetStatus() ActionStatus {
 	return result.Status
 }

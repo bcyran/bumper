@@ -66,7 +66,7 @@ func TestExecute_Ok(t *testing.T) {
 		upstreamVersion:  expectedUpstreamVersion,
 		cmpResult:        1,
 	}
-	assert.Equal(t, expectedResult, result)
+	assert.Equal(t, expectedResult, *result)
 	assert.Equal(t, expectedUpstreamVersion, pkg.UpstreamVersion)
 }
 
