@@ -2,6 +2,7 @@ package bumper
 
 import (
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -9,6 +10,18 @@ import (
 )
 
 const newPkgrel = "pkgrel=1"
+
+type CommandRunner = func(cwd string, command string, args ...string) ([]byte, error)
+
+func ExecCommand(cwd string, command string, args ...string) ([]byte, error) {
+	cmd := exec.Command(command, args...)
+	cmd.Dir = cwd
+	stdout, err := cmd.Output()
+	if err != nil {
+		return []byte{}, err
+	}
+	return stdout, nil
+}
 
 var pkgrelPattern = regexp.MustCompile(`pkgrel=\d`)
 
@@ -35,28 +48,53 @@ func (result *bumpActionResult) String() string {
 	return "bump ✓"
 }
 
-type BumpAction struct{}
-
-func (action *BumpAction) Execute(pkg *pack.Package) *bumpActionResult {
-	if !pkg.IsOutdated {
-		return &bumpActionResult{BaseActionResult: BaseActionResult{Status: ACTION_SKIPPED}}
-	}
-	if result := action.bump(pkg); result != nil {
-		return result
-	}
-
-	return &bumpActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-		bumpOk:           true,
-		updpkgsumsOk:     true,
-		makepkgOk:        true,
-	}
+type BumpAction struct {
+	commandRunner CommandRunner
 }
 
-func (action *BumpAction) bump(pkg *pack.Package) *bumpActionResult {
+func NewBumpAction(commandRunner CommandRunner) *BumpAction {
+	return &BumpAction{commandRunner: commandRunner}
+}
+
+func (action *BumpAction) Execute(pkg *pack.Package) *bumpActionResult {
+	actionResult := &bumpActionResult{}
+
+	if !pkg.IsOutdated {
+		actionResult.Status = ACTION_SKIPPED
+		return actionResult
+	}
+
+	if result := action.bump(pkg); result == false {
+		actionResult.Status = ACTION_FAILED
+		actionResult.bumpOk = false
+		return actionResult
+	} else {
+		actionResult.bumpOk = true
+	}
+
+	if result := action.updpkgsums(pkg); result == false {
+		actionResult.Status = ACTION_FAILED
+		actionResult.updpkgsumsOk = false
+		return actionResult
+	} else {
+		actionResult.updpkgsumsOk = true
+	}
+
+	if result := action.makepkg(pkg); result == false {
+		actionResult.Status = ACTION_FAILED
+		actionResult.makepkgOk = false
+		return actionResult
+	} else {
+		actionResult.makepkgOk = true
+	}
+
+	return actionResult
+}
+
+func (action *BumpAction) bump(pkg *pack.Package) bool {
 	pkgbuild, err := os.ReadFile(pkg.PkgbuildPath())
 	if err != nil {
-		return &bumpActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}, bumpOk: false}
+		return false
 	}
 	updatedPkgbuild := strings.ReplaceAll(
 		string(pkgbuild), pkg.Pkgver.GetVersionStr(), pkg.UpstreamVersion.GetVersionStr(),
@@ -66,15 +104,27 @@ func (action *BumpAction) bump(pkg *pack.Package) *bumpActionResult {
 	}
 	err = os.WriteFile(pkg.PkgbuildPath(), []byte(updatedPkgbuild), 0644)
 	if err != nil {
-		return &bumpActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}, bumpOk: false}
+		return false
 	}
-	return nil
+	return true
 }
 
-func (action *BumpAction) updpkgsums(pkg *pack.Package) *bumpActionResult {
-	return nil
+func (action *BumpAction) updpkgsums(pkg *pack.Package) bool {
+	_, err := action.commandRunner(pkg.Path, "updpkgsums")
+	if err != nil {
+		return false
+	}
+	return true
 }
 
-func (action *BumpAction) makepkg(pkg *pack.Package) *bumpActionResult {
-	return nil
+func (action *BumpAction) makepkg(pkg *pack.Package) bool {
+	srcinfo, err := action.commandRunner(pkg.Path, "makepkg", "--printsrcinfo")
+	if err != nil {
+		return false
+	}
+	err = os.WriteFile(pkg.SrcinfoPath(), srcinfo, 0644)
+	if err != nil {
+		return false
+	}
+	return true
 }
