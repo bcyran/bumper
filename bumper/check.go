@@ -14,7 +14,7 @@ type checkActionResult struct {
 	cmpResult       int
 }
 
-func (result checkActionResult) String() string {
+func (result *checkActionResult) String() string {
 	if result.Status == ACTION_FAILED {
 		return "x"
 	}
@@ -51,6 +51,7 @@ func (action *CheckAction) Execute(pkg *pack.Package) *checkActionResult {
 	}
 	cmpResult := pack.VersionCmp(upstreamVersion, pkg.Pkgver)
 	pkg.UpstreamVersion = upstreamVersion
+	pkg.IsOutdated = cmpResult == 1
 	return &checkActionResult{
 		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 		currentVersion:   pkg.Pkgver,

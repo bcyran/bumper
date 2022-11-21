@@ -18,6 +18,15 @@ type Package struct {
 	*Srcinfo
 	Path            string
 	UpstreamVersion upstream.Version
+	IsOutdated      bool
+}
+
+func (pkg *Package) PkgbuildPath() string {
+	return pkgbuildPath(pkg.Path)
+}
+
+func (pkg *Package) SrcinfoPath() string {
+	return srcinfoPath(pkg.Path)
 }
 
 // LoadPackage tries to create Package struct based on given package dir path.
@@ -55,13 +64,13 @@ func validateIsPackage(path string) error {
 }
 
 // pkgbuildPath returns path to PKGBUILD given package root path.
-func pkgbuildPath(path string) string {
-	return filepath.Join(path, "PKGBUILD")
+func pkgbuildPath(pkgPath string) string {
+	return filepath.Join(pkgPath, "PKGBUILD")
 }
 
 // srcinfoPath returns path to .SRCINFO given package root path.
-func srcinfoPath(path string) string {
-	return filepath.Join(path, ".SRCINFO")
+func srcinfoPath(pkgPath string) string {
+	return filepath.Join(pkgPath, ".SRCINFO")
 }
 
 // makePackage creates Package struct based on given package path dir without any safety checks.

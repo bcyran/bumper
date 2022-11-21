@@ -68,6 +68,7 @@ func TestExecute_Ok(t *testing.T) {
 	}
 	assert.Equal(t, expectedResult, *result)
 	assert.Equal(t, expectedUpstreamVersion, pkg.UpstreamVersion)
+	assert.True(t, pkg.IsOutdated)
 }
 
 func TestResult_String(t *testing.T) {
