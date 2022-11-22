@@ -88,6 +88,8 @@ func (action *BumpAction) Execute(pkg *pack.Package) *bumpActionResult {
 		actionResult.makepkgOk = true
 	}
 
+	actionResult.Status = ACTION_SUCCESS
+
 	return actionResult
 }
 
