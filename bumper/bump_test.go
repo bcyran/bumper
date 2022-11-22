@@ -1,6 +1,7 @@
 package bumper
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -21,7 +22,10 @@ type commandRunnerRetval struct {
 	err    error
 }
 
-func makeFakeCommandRunner(stdout []byte, err error) (CommandRunner, *[]commandRunnerParams) {
+// makeFakeCommandRunner creates fake CommandRunner which doesn't use exec.Command.
+// Instead it appends each call params to a slice for later assertions.
+// Each call returns stdout and err values from given retvals slice.
+func makeFakeCommandRunner(retvals *[]commandRunnerRetval) (CommandRunner, *[]commandRunnerParams) {
 	var commandRuns []commandRunnerParams
 	fakeExecCommand := func(cwd string, command string, args ...string) ([]byte, error) {
 		opts := commandRunnerParams{
@@ -30,7 +34,9 @@ func makeFakeCommandRunner(stdout []byte, err error) (CommandRunner, *[]commandR
 			args:    args,
 		}
 		commandRuns = append(commandRuns, opts)
-		return stdout, err
+		retval := (*retvals)[0]
+		*retvals = (*retvals)[1:]
+		return retval.stdout, retval.err
 	}
 	return fakeExecCommand, &commandRuns
 }
@@ -60,55 +66,110 @@ url='https://foo.bar/{version}/baz'
 	return strings.ReplaceAll(pkgbuild, "{pkgrel}", pkgrel)
 }
 
-func TestBumpAction_BumpsPkgverPkgrel(t *testing.T) {
+func TestBumpAction_Ok(t *testing.T) {
 	versionBefore := "1.0.0"
 	pkgrelBefore := "2"
 	expectedVersion := "2.0.0"
 	expectedPkgrel := "1"
+	expectedSrcinfo := "expected_srcinfo"
+	expectedPkgbuild := pkgbuildString(expectedVersion, expectedPkgrel)
+
+	// build our Package struct and write PKGBUILD
 	pkg := makeOutdatedPackage(t.TempDir(), versionBefore, pkgrelBefore, expectedVersion)
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString(versionBefore, pkgrelBefore)), 0644)
 
-	fakeCommandRunner, _ := makeFakeCommandRunner([]byte{}, nil)
+	// mock return values for two command runs
+	commandRetvals := []commandRunnerRetval{
+		{stdout: []byte{}, err: nil},                // retval for updpkgsums
+		{stdout: []byte(expectedSrcinfo), err: nil}, // retval for makepkg --printsrcinfo
+	}
+	fakeCommandRunner, commandRuns := makeFakeCommandRunner(&commandRetvals)
+
+	// execute the action with our mocked command runner
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
-	assert.True(t, result.bumpOk)
+	// returned result is correct
+	expectedResult := bumpActionResult{
+		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+		bumpOk:           true,
+		updpkgsumsOk:     true,
+		makepkgOk:        true,
+	}
+	assert.Equal(t, expectedResult, *result)
+
+	// pkgver and pkgrel are updated in pkgbuild
 	pkgbuild, _ := os.ReadFile(pkg.PkgbuildPath())
-	assert.Equal(t, pkgbuildString(expectedVersion, expectedPkgrel), string(pkgbuild))
-}
+	assert.Equal(t, expectedPkgbuild, string(pkgbuild))
 
-func TestBumpAction_Updpkgsums(t *testing.T) {
-	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
-
-	fakeCommandRunner, commandRuns := makeFakeCommandRunner([]byte{}, nil)
-	action := NewBumpAction(fakeCommandRunner)
-	result := action.Execute(pkg)
-
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
-	assert.True(t, result.updpkgsumsOk)
-	expectedCommandRun := commandRunnerParams{
+	// updpkgsums command has been ran
+	expectedUpdpkgsumsCommand := commandRunnerParams{
 		cwd: pkg.Path, command: "updpkgsums", args: nil,
 	}
-	assert.Equal(t, expectedCommandRun, (*commandRuns)[0])
+	assert.Equal(t, expectedUpdpkgsumsCommand, (*commandRuns)[0])
+
+	// makepkg --printsrcinfo has been ran and result written to .SRCINFO
+	expectedMakepkgCommand := commandRunnerParams{
+		cwd: pkg.Path, command: "makepkg", args: []string{"--printsrcinfo"},
+	}
+	assert.Equal(t, expectedMakepkgCommand, (*commandRuns)[1])
+	srcinfo, _ := os.ReadFile(pkg.SrcinfoPath())
+	assert.Equal(t, expectedSrcinfo, string(srcinfo))
 }
 
-func TestBumpAction_Makepkg(t *testing.T) {
+func TestBumpAction_BumpError(t *testing.T) {
+	// bump should fail because there's no PKGBUILD file
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
-	expectedSrcinfo := "expected_srcinfo"
 
-	fakeCommandRunner, commandRuns := makeFakeCommandRunner([]byte(expectedSrcinfo), nil)
+	fakeCommandRunner, _ := makeFakeCommandRunner(&[]commandRunnerRetval{})
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
-	assert.True(t, result.makepkgOk)
-	expectedCommandRun := commandRunnerParams{
-		cwd: pkg.Path, command: "makepkg", args: []string{"--printsrcinfo"},
+	expectedResult := bumpActionResult{
+		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
+		bumpOk:           false,
 	}
-	assert.Equal(t, expectedCommandRun, (*commandRuns)[1])
-	srcinfo, _ := os.ReadFile(pkg.SrcinfoPath())
-	assert.Equal(t, expectedSrcinfo, string(srcinfo))
+	assert.Equal(t, expectedResult, *result)
+}
+
+func TestBumpAction_UpdpkgsumsError(t *testing.T) {
+	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
+	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
+
+	commandRetvals := []commandRunnerRetval{
+		{stdout: []byte{}, err: fmt.Errorf("foo bar")}, // retval for updpkgsums
+	}
+	fakeCommandRunner, _ := makeFakeCommandRunner(&commandRetvals)
+
+	action := NewBumpAction(fakeCommandRunner)
+	result := action.Execute(pkg)
+
+	expectedResult := bumpActionResult{
+		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
+		bumpOk:           true,
+		updpkgsumsOk:     false,
+	}
+	assert.Equal(t, expectedResult, *result)
+}
+
+func TestBumpAction_MakepkgError(t *testing.T) {
+	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
+	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
+
+	commandRetvals := []commandRunnerRetval{
+		{stdout: []byte{}, err: nil},                   // retval for updpkgsums
+		{stdout: []byte{}, err: fmt.Errorf("foo bar")}, // retval for makepkg
+	}
+	fakeCommandRunner, _ := makeFakeCommandRunner(&commandRetvals)
+
+	action := NewBumpAction(fakeCommandRunner)
+	result := action.Execute(pkg)
+
+	expectedResult := bumpActionResult{
+		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
+		bumpOk:           true,
+		updpkgsumsOk:     true,
+		makepkgOk:        false,
+	}
+	assert.Equal(t, expectedResult, *result)
 }
