@@ -173,3 +173,30 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 	}
 	assert.Equal(t, expectedResult, *result)
 }
+
+func TestBumpActionResult_String(t *testing.T) {
+	cases := map[bumpActionResult]string{
+		{
+			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+		}: "bump ✓",
+		{
+			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+			bumpOk:           false,
+		}: "bump ✗",
+		{
+			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+			bumpOk:           true,
+			updpkgsumsOk:     false,
+		}: "updpkgsums ✗",
+		{
+			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+			bumpOk:           true,
+			updpkgsumsOk:     true,
+			makepkgOk:        false,
+		}: "makepkg ✗",
+	}
+
+	for result, expectedString := range cases {
+		assert.Equal(t, expectedString, result.String())
+	}
+}
