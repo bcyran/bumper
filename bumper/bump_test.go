@@ -66,7 +66,7 @@ url='https://foo.bar/{version}/baz'
 	return strings.ReplaceAll(pkgbuild, "{pkgrel}", pkgrel)
 }
 
-func TestBumpAction_Ok(t *testing.T) {
+func TestBumpAction_Success(t *testing.T) {
 	versionBefore := "1.0.0"
 	pkgrelBefore := "2"
 	expectedVersion := "2.0.0"
@@ -117,7 +117,7 @@ func TestBumpAction_Ok(t *testing.T) {
 	assert.Equal(t, expectedSrcinfo, string(srcinfo))
 }
 
-func TestBumpAction_BumpError(t *testing.T) {
+func TestBumpAction_FailBump(t *testing.T) {
 	// bump should fail because there's no PKGBUILD file
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 
@@ -132,7 +132,7 @@ func TestBumpAction_BumpError(t *testing.T) {
 	assert.Equal(t, expectedResult, *result)
 }
 
-func TestBumpAction_UpdpkgsumsError(t *testing.T) {
+func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
 
@@ -152,7 +152,7 @@ func TestBumpAction_UpdpkgsumsError(t *testing.T) {
 	assert.Equal(t, expectedResult, *result)
 }
 
-func TestBumpAction_MakepkgError(t *testing.T) {
+func TestBumpAction_FailMakepkg(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
 

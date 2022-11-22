@@ -21,29 +21,7 @@ func (provider *fakeVersionProvider) LatestVersion() (upstream.Version, error) {
 	return upstream.Version(provider.version), nil
 }
 
-func TestExecute_NoProvider(t *testing.T) {
-	verProvFactory := func(url string) upstream.VersionProvider { return nil }
-	action := NewCheckAction(verProvFactory)
-	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}}
-
-	result := action.Execute(&pkg)
-
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
-}
-
-func TestExecute_ProviderFailed(t *testing.T) {
-	verProvFactory := func(url string) upstream.VersionProvider {
-		return &fakeVersionProvider{err: fmt.Errorf("err")}
-	}
-	action := NewCheckAction(verProvFactory)
-	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}}
-
-	result := action.Execute(&pkg)
-
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
-}
-
-func TestExecute_Ok(t *testing.T) {
+func TestCheckAction_Success(t *testing.T) {
 	verProvFactory := func(url string) upstream.VersionProvider {
 		return &fakeVersionProvider{version: "2.0.0"}
 	}
@@ -71,7 +49,29 @@ func TestExecute_Ok(t *testing.T) {
 	assert.True(t, pkg.IsOutdated)
 }
 
-func TestResult_String(t *testing.T) {
+func TestCheckAction_FailNoProvider(t *testing.T) {
+	verProvFactory := func(url string) upstream.VersionProvider { return nil }
+	action := NewCheckAction(verProvFactory)
+	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}}
+
+	result := action.Execute(&pkg)
+
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+}
+
+func TestCheckAction_FailProviderFailed(t *testing.T) {
+	verProvFactory := func(url string) upstream.VersionProvider {
+		return &fakeVersionProvider{err: fmt.Errorf("err")}
+	}
+	action := NewCheckAction(verProvFactory)
+	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}}
+
+	result := action.Execute(&pkg)
+
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+}
+
+func TestCheckActionResult_String(t *testing.T) {
 	cases := map[checkActionResult]string{
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
