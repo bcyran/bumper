@@ -41,21 +41,28 @@ func NewCheckAction(versionProviderFactory versionProviderFactory) *CheckAction 
 }
 
 func (action *CheckAction) Execute(pkg *pack.Package) *checkActionResult {
+	actionResult := &checkActionResult{}
+
 	provider := action.versionProviderFactory(pkg.Url)
 	if provider == nil {
-		return &checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
+		actionResult.Status = ACTION_FAILED
+		return actionResult
 	}
+
 	upstreamVersion, err := provider.LatestVersion()
 	if err != nil {
-		return &checkActionResult{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}
+		actionResult.Status = ACTION_FAILED
+		return actionResult
 	}
+
 	cmpResult := pack.VersionCmp(upstreamVersion, pkg.Pkgver)
 	pkg.UpstreamVersion = upstreamVersion
 	pkg.IsOutdated = cmpResult == 1
-	return &checkActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-		currentVersion:   pkg.Pkgver,
-		upstreamVersion:  upstreamVersion,
-		cmpResult:        cmpResult,
-	}
+
+	actionResult.Status = ACTION_SUCCESS
+	actionResult.currentVersion = pkg.Pkgver
+	actionResult.upstreamVersion = upstreamVersion
+	actionResult.cmpResult = cmpResult
+
+	return actionResult
 }
