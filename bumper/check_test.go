@@ -38,13 +38,13 @@ func TestCheckAction_Success(t *testing.T) {
 	result := action.Execute(&pkg)
 
 	expectedUpstreamVersion := upstream.Version("2.0.0")
-	expectedResult := checkActionResult{
+	expectedResult := &checkActionResult{
 		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 		currentVersion:   pack.Version("1.0.0"),
 		upstreamVersion:  expectedUpstreamVersion,
 		cmpResult:        1,
 	}
-	assert.Equal(t, expectedResult, *result)
+	assert.Equal(t, expectedResult, result)
 	assert.Equal(t, expectedUpstreamVersion, pkg.UpstreamVersion)
 	assert.True(t, pkg.IsOutdated)
 }

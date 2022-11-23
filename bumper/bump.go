@@ -56,7 +56,7 @@ func NewBumpAction(commandRunner CommandRunner) *BumpAction {
 	return &BumpAction{commandRunner: commandRunner}
 }
 
-func (action *BumpAction) Execute(pkg *pack.Package) *bumpActionResult {
+func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &bumpActionResult{}
 
 	if !pkg.IsOutdated {

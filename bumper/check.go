@@ -40,7 +40,7 @@ func NewCheckAction(versionProviderFactory versionProviderFactory) *CheckAction 
 	return &CheckAction{versionProviderFactory: versionProviderFactory}
 }
 
-func (action *CheckAction) Execute(pkg *pack.Package) *checkActionResult {
+func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &checkActionResult{}
 
 	provider := action.versionProviderFactory(pkg.Url)

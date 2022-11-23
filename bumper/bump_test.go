@@ -90,13 +90,13 @@ func TestBumpAction_Success(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// returned result is correct
-	expectedResult := bumpActionResult{
+	expectedResult := &bumpActionResult{
 		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 		bumpOk:           true,
 		updpkgsumsOk:     true,
 		makepkgOk:        true,
 	}
-	assert.Equal(t, expectedResult, *result)
+	assert.Equal(t, expectedResult, result)
 
 	// pkgver and pkgrel are updated in pkgbuild
 	pkgbuild, _ := os.ReadFile(pkg.PkgbuildPath())
@@ -125,11 +125,11 @@ func TestBumpAction_FailBump(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	expectedResult := bumpActionResult{
+	expectedResult := &bumpActionResult{
 		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
 		bumpOk:           false,
 	}
-	assert.Equal(t, expectedResult, *result)
+	assert.Equal(t, expectedResult, result)
 }
 
 func TestBumpAction_FailUpdpkgsums(t *testing.T) {
@@ -144,12 +144,12 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	expectedResult := bumpActionResult{
+	expectedResult := &bumpActionResult{
 		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
 		bumpOk:           true,
 		updpkgsumsOk:     false,
 	}
-	assert.Equal(t, expectedResult, *result)
+	assert.Equal(t, expectedResult, result)
 }
 
 func TestBumpAction_FailMakepkg(t *testing.T) {
@@ -165,13 +165,13 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	expectedResult := bumpActionResult{
+	expectedResult := &bumpActionResult{
 		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
 		bumpOk:           true,
 		updpkgsumsOk:     true,
 		makepkgOk:        false,
 	}
-	assert.Equal(t, expectedResult, *result)
+	assert.Equal(t, expectedResult, result)
 }
 
 func TestBumpActionResult_String(t *testing.T) {
