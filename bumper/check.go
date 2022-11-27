@@ -16,7 +16,7 @@ type checkActionResult struct {
 
 func (result *checkActionResult) String() string {
 	if result.Status == ACTION_FAILED {
-		return "x"
+		return "✗"
 	}
 	if result.Status == ACTION_SKIPPED {
 		return "-"

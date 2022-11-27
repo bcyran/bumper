@@ -2,10 +2,10 @@ package bumper
 
 import (
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/bcyran/bumper/bumper"
+	"github.com/bcyran/bumper/upstream"
 	"github.com/urfave/cli/v2"
 )
 
@@ -31,9 +31,27 @@ func Main(args []string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			for _, pack := range packages {
-				fmt.Printf("- %s (%s)\n", pack.Pkgbase, pack.Pkgver)
+
+			actions := []bumper.Action{
+				bumper.NewCheckAction(upstream.NewVersionProvider),
+				bumper.NewBumpAction(bumper.ExecCommand),
 			}
+
+			pkgListDisplay := NewPackageListDisplay()
+			pkgDisplays := make([]*PackageDisplay, len(packages))
+			for i, pkg := range packages {
+				pkgDisplays[i] = pkgListDisplay.AddPackage(pkg.Pkgbase)
+			}
+
+			handleResult := func(pkgIndex int, result bumper.ActionResult) {
+				pkgDisplays[pkgIndex].AddResult(result)
+				pkgListDisplay.Display()
+			}
+			handleFinished := func(pkgIndex int) {
+				pkgDisplays[pkgIndex].SetFinished()
+				pkgListDisplay.Display()
+			}
+			bumper.Run(packages, actions, handleResult, handleFinished)
 
 			return nil
 		},
