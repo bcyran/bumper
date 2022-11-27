@@ -6,9 +6,10 @@ import (
 	"github.com/bcyran/bumper/pack"
 )
 
-type ResultHandler func(pkgIndex int, result ActionResult, isFinal bool)
+type ResultHandler func(pkgIndex int, result ActionResult)
+type FinishedHandler func(pkgIndex int)
 
-func Run(pkgs []pack.Package, actions []Action, resultHandler ResultHandler) {
+func Run(pkgs []pack.Package, actions []Action, resultHandler ResultHandler, finishedHandler FinishedHandler) {
 	packageChans := make([]chan ActionResult, len(pkgs))
 	for i := range pkgs {
 		packageChans[i] = make(chan ActionResult)
@@ -29,10 +30,11 @@ func Run(pkgs []pack.Package, actions []Action, resultHandler ResultHandler) {
 		if !ok {
 			cases[chosen].Chan = reflect.ValueOf(nil)
 			running -= 1
+			go finishedHandler(chosen)
 			continue
 		}
 
-		go resultHandler(chosen, value.Interface().(ActionResult), !ok)
+		go resultHandler(chosen, value.Interface().(ActionResult))
 	}
 
 }
