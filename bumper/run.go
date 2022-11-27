@@ -2,6 +2,7 @@ package bumper
 
 import (
 	"reflect"
+	"sync"
 
 	"github.com/bcyran/bumper/pack"
 )
@@ -24,19 +25,30 @@ func Run(pkgs []pack.Package, actions []Action, resultHandler ResultHandler, fin
 		go RunPackgeActions(&pkgs[i], actions, packageChans[i])
 	}
 
+	handlersWg := sync.WaitGroup{}
 	running := len(cases)
 	for running > 0 {
 		chosen, value, ok := reflect.Select(cases)
 		if !ok {
 			cases[chosen].Chan = reflect.ValueOf(nil)
 			running -= 1
-			go finishedHandler(chosen)
+
+			handlersWg.Add(1)
+			go func() {
+				finishedHandler(chosen)
+				handlersWg.Done()
+			}()
 			continue
 		}
 
-		go resultHandler(chosen, value.Interface().(ActionResult))
+		handlersWg.Add(1)
+		go func() {
+			resultHandler(chosen, value.Interface().(ActionResult))
+			handlersWg.Done()
+		}()
 	}
 
+	handlersWg.Wait()
 }
 
 func RunPackgeActions(pkg *pack.Package, actions []Action, resultChan chan ActionResult) {
