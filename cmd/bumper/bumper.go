@@ -45,13 +45,12 @@ func Main(args []string) {
 
 			handleResult := func(pkgIndex int, result bumper.ActionResult) {
 				pkgDisplays[pkgIndex].AddResult(result)
-				pkgListDisplay.Display()
 			}
 			handleFinished := func(pkgIndex int) {
 				pkgDisplays[pkgIndex].SetFinished()
-				pkgListDisplay.Display()
 			}
-			bumper.Run(packages, actions, handleResult, handleFinished)
+			go bumper.Run(packages, actions, handleResult, handleFinished)
+			pkgListDisplay.LiveDisplay()
 
 			return nil
 		},

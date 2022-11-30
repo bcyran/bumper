@@ -4,16 +4,22 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/bcyran/bumper/bumper"
 	"github.com/gosuri/uilive"
 )
+
+const updateIntervalMs = 100
+
+var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
 type PackageDisplay struct {
 	name          string
 	actionResults []bumper.ActionResult
 	finished      bool
 	mtx           *sync.RWMutex
+	spinnerFrame  int
 }
 
 func newPackageDisplay(name string) *PackageDisplay {
@@ -37,20 +43,30 @@ func (pkgDisplay *PackageDisplay) SetFinished() {
 	pkgDisplay.mtx.Unlock()
 }
 
+func (pkgDisplay *PackageDisplay) AnimationTick() {
+	pkgDisplay.mtx.Lock()
+	pkgDisplay.spinnerFrame = (pkgDisplay.spinnerFrame + 1) % len(spinnerFrames)
+	pkgDisplay.mtx.Unlock()
+}
+
 func (pkgDisplay *PackageDisplay) String() string {
 	pkgDisplay.mtx.RLock()
 	resultsStrings := make([]string, 0)
+	var bullet string
 	for _, result := range pkgDisplay.actionResults {
 		if resStr := result.String(); resStr != "" {
 			resultsStrings = append(resultsStrings, result.String())
 		}
 	}
-	if pkgDisplay.finished == false {
+	if pkgDisplay.finished == true {
+		bullet = "✓"
+	} else {
+		bullet = spinnerFrames[pkgDisplay.spinnerFrame]
 		resultsStrings = append(resultsStrings, "...")
 	}
 	pkgDisplay.mtx.RUnlock()
 
-	return fmt.Sprintf("- %s: %s", pkgDisplay.name, strings.Join(resultsStrings, ", "))
+	return fmt.Sprintf("%s %s: %s", bullet, pkgDisplay.name, strings.Join(resultsStrings, ", "))
 }
 
 type PackageListDisplay struct {
@@ -82,4 +98,22 @@ func (pkgListDisplay *PackageListDisplay) String() string {
 func (pkgListDisplay *PackageListDisplay) Display() {
 	fmt.Fprintf(pkgListDisplay.liveWriter, pkgListDisplay.String())
 	pkgListDisplay.liveWriter.Flush()
+}
+
+func (pkgListDisplay *PackageListDisplay) LiveDisplay() {
+	for range time.Tick(updateIntervalMs * time.Millisecond) {
+		pkgListDisplay.Display()
+
+		finishedCount := 0
+		for _, pkgDisplay := range pkgListDisplay.packages {
+			if pkgDisplay.finished == true {
+				finishedCount += 1
+			}
+			pkgDisplay.AnimationTick()
+		}
+
+		if finishedCount == len(pkgListDisplay.packages) {
+			break
+		}
+	}
 }
