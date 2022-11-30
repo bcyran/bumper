@@ -178,22 +178,22 @@ func TestBumpActionResult_String(t *testing.T) {
 	cases := map[bumpActionResult]string{
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-		}: "bump ✓",
+		}: "bumped",
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 			bumpOk:           false,
-		}: "bump ✗",
+		}: "bump failed",
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 			bumpOk:           true,
 			updpkgsumsOk:     false,
-		}: "updpkgsums ✗",
+		}: "updpkgsums failed",
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 			bumpOk:           true,
 			updpkgsumsOk:     true,
 			makepkgOk:        false,
-		}: "makepkg ✗",
+		}: "makepkg failed",
 	}
 
 	for result, expectedString := range cases {

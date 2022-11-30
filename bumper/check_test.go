@@ -75,7 +75,7 @@ func TestCheckActionResult_String(t *testing.T) {
 	cases := map[checkActionResult]string{
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-		}: "✗",
+		}: "?",
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 			currentVersion:   pack.Version("curr"),
@@ -92,7 +92,7 @@ func TestCheckActionResult_String(t *testing.T) {
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 			currentVersion:   pack.Version("curr"),
 			cmpResult:        0,
-		}: "curr ✓",
+		}: "curr",
 	}
 
 	for result, expectedString := range cases {

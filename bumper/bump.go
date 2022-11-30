@@ -37,15 +37,15 @@ func (result *bumpActionResult) String() string {
 		return ""
 	}
 	if !result.bumpOk {
-		return "bump ✗"
+		return "bump failed"
 	}
 	if !result.updpkgsumsOk {
-		return "updpkgsums ✗"
+		return "updpkgsums failed"
 	}
 	if !result.makepkgOk {
-		return "makepkg ✗"
+		return "makepkg failed"
 	}
-	return "bump ✓"
+	return "bumped"
 }
 
 type BumpAction struct {
