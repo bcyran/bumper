@@ -18,8 +18,9 @@ type PackageDisplay struct {
 	name          string
 	actionResults []bumper.ActionResult
 	finished      bool
-	mtx           *sync.RWMutex
+	failed        bool
 	spinnerFrame  int
+	mtx           *sync.RWMutex
 }
 
 func newPackageDisplay(name string) *PackageDisplay {
@@ -27,6 +28,8 @@ func newPackageDisplay(name string) *PackageDisplay {
 		name:          name,
 		actionResults: []bumper.ActionResult{},
 		finished:      false,
+		failed:        false,
+		spinnerFrame:  0,
 		mtx:           &sync.RWMutex{},
 	}
 }
@@ -40,6 +43,10 @@ func (pkgDisplay *PackageDisplay) AddResult(actionResult bumper.ActionResult) {
 func (pkgDisplay *PackageDisplay) SetFinished() {
 	pkgDisplay.mtx.Lock()
 	pkgDisplay.finished = true
+	lastResult := pkgDisplay.actionResults[len(pkgDisplay.actionResults)-1]
+	if lastResult.GetStatus() == bumper.ACTION_FAILED {
+		pkgDisplay.failed = true
+	}
 	pkgDisplay.mtx.Unlock()
 }
 
@@ -59,7 +66,11 @@ func (pkgDisplay *PackageDisplay) String() string {
 		}
 	}
 	if pkgDisplay.finished == true {
-		bullet = "✓"
+		if pkgDisplay.failed == true {
+			bullet = "✗"
+		} else {
+			bullet = "✓"
+		}
 	} else {
 		bullet = spinnerFrames[pkgDisplay.spinnerFrame]
 		resultsStrings = append(resultsStrings, "...")
