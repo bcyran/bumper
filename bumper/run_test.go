@@ -82,14 +82,6 @@ func TestRun_Success(t *testing.T) {
 	Run(packages, actions, handleResult, handleFinished)
 
 	// check if everything matches
-	for pkgIndex := range expectedResults {
-		// same number of results for a given package
-		assert.Equal(t, len(expectedResults[pkgIndex]), len(actualResults[pkgIndex]))
-
-		// each expected result is present in the actual results, order does not matter
-		for _, expectedResult := range expectedResults[pkgIndex] {
-			assert.Contains(t, actualResults[pkgIndex], expectedResult)
-		}
-	}
+	assert.ElementsMatch(t, actualResults, expectedResults)
 	assert.ElementsMatch(t, actualFinished, expectedFinished)
 }
