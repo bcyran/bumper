@@ -26,7 +26,7 @@ func (result *checkActionResult) String() string {
 	} else if result.cmpResult == 0 {
 		return fmt.Sprintf("%s ✓", result.currentVersion)
 	} else {
-		return fmt.Sprintf("%s < %s !", result.currentVersion, result.upstreamVersion)
+		return fmt.Sprintf("%s < %s !", result.upstreamVersion, result.currentVersion)
 	}
 }
 

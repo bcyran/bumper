@@ -87,7 +87,7 @@ func TestCheckActionResult_String(t *testing.T) {
 			currentVersion:   pack.Version("curr"),
 			upstreamVersion:  upstream.Version("upstr"),
 			cmpResult:        -1,
-		}: "curr < upstr !",
+		}: "upstr < curr !",
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 			currentVersion:   pack.Version("curr"),
