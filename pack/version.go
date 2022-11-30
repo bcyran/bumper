@@ -1,7 +1,7 @@
 package pack
 
 import (
-	"strings"
+	"strconv"
 	"unicode"
 )
 
@@ -95,16 +95,20 @@ func Rpmvercmp(a, b string) int {
 
 		// Trim the leading zeros if they're are numeric.
 		if isNum {
-			aSeg = strings.TrimLeft(aSeg, "0")
-			bSeg = strings.TrimLeft(bSeg, "0")
-		}
+			aSegNum, _ := strconv.Atoi(aSeg)
+			bSegNum, _ := strconv.Atoi(bSeg)
 
-		// Compare the segment strings.
-		// String comparison will work correctly, no matter if they're alpha or numeric.
-		if aSeg > bSeg {
-			return 1
-		} else if aSeg < bSeg {
-			return -1
+			if aSegNum > bSegNum {
+				return 1
+			} else if aSegNum < bSegNum {
+				return -1
+			}
+		} else {
+			if aSeg > bSeg {
+				return 1
+			} else if aSeg < bSeg {
+				return -1
+			}
 		}
 
 		// Place aSegStart and bSegStart at the end of the current segment.
