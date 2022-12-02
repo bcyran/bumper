@@ -1,7 +1,6 @@
 package bumper
 
 import (
-	"errors"
 	"log"
 	"os"
 	"sync"
@@ -13,75 +12,110 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const appName = "bumper"
-const appVersion = "0.0.0"
+type DoActions struct {
+	bump bool
+}
 
 func Main(args []string) {
+	doActions := DoActions{bump: true}
+
 	app := &cli.App{
-		Name:  appName,
-		Usage: "easily bump AUR package pkgver",
+		Name:      "bumper",
+		Version:   "0.1.0",
+		Usage:     "easily bump $pkgver in AUR packages",
+		ArgsUsage: "[directory]",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "bump",
+				Aliases:     []string{"b"},
+				Usage:       "bump outdated packages",
+				Value:       true,
+				Destination: &doActions.bump,
+			},
+		},
 		Action: func(ctx *cli.Context) error {
-			var path string
+			var workDir string
 			switch ctx.Args().Len() {
 			case 0:
-				path = "."
+				workDir = "."
 			case 1:
-				path = ctx.Args().First()
+				workDir = ctx.Args().First()
 			default:
-				return errors.New("Too many arguments, only one path allowed")
+				return cli.Exit("Too many arguments, only one path allowed!", 1)
 			}
 
-			packages, err := bumper.CollectPackages(path, 1)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			actions := []bumper.Action{
-				bumper.NewCheckAction(upstream.NewVersionProvider),
-				bumper.NewBumpAction(bumper.ExecCommand),
-			}
-
-			pkgListDisplay := NewPackageListDisplay()
-			pkgDisplays := make([]*PackageDisplay, len(packages))
-			for i, pkg := range packages {
-				pkgDisplays[i] = pkgListDisplay.AddPackage(pkg.Pkgbase)
-			}
-
-			handleResult := func(pkgIndex int, result bumper.ActionResult) {
-				pkgDisplays[pkgIndex].AddResult(result)
-			}
-			handleFinished := func(pkgIndex int) {
-				pkgDisplays[pkgIndex].SetFinished()
-			}
-
-			ttyOutput := isatty.IsTerminal(os.Stdout.Fd())
-
-			wg := sync.WaitGroup{}
-
-			wg.Add(1)
-			go func() {
-				bumper.Run(packages, actions, handleResult, handleFinished)
-				wg.Done()
-			}()
-
-			if ttyOutput {
-				wg.Add(1)
-				go func() {
-					pkgListDisplay.LiveDisplay(uilive.New())
-					wg.Done()
-				}()
-			}
-
-			wg.Wait()
-			if !ttyOutput {
-				pkgListDisplay.Display(os.Stdout)
-			}
+			actions := createActions(doActions)
+			runBumper(workDir, actions)
 
 			return nil
 		},
 	}
+	cli.AppHelpTemplate = `{{.Name}} - {{.Usage}}
+
+Usage:
+  {{.HelpName}} {{if .VisibleFlags}}[options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
+{{if .VisibleFlags}}
+Options:
+  {{range .VisibleFlags}}{{.}}
+  {{end}}{{end}}
+`
 
 	if err := app.Run(args); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func createActions(doActions DoActions) []bumper.Action {
+	actions := []bumper.Action{
+		bumper.NewCheckAction(upstream.NewVersionProvider),
+	}
+
+	if doActions.bump == true {
+		actions = append(actions, bumper.NewBumpAction(bumper.ExecCommand))
+	}
+
+	return actions
+}
+
+func runBumper(workDir string, actions []bumper.Action) {
+	packages, err := bumper.CollectPackages(workDir, 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pkgListDisplay := NewPackageListDisplay()
+	pkgDisplays := make([]*PackageDisplay, len(packages))
+	for i, pkg := range packages {
+		pkgDisplays[i] = pkgListDisplay.AddPackage(pkg.Pkgbase)
+	}
+
+	handleResult := func(pkgIndex int, result bumper.ActionResult) {
+		pkgDisplays[pkgIndex].AddResult(result)
+	}
+	handleFinished := func(pkgIndex int) {
+		pkgDisplays[pkgIndex].SetFinished()
+	}
+
+	ttyOutput := isatty.IsTerminal(os.Stdout.Fd())
+
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		bumper.Run(packages, actions, handleResult, handleFinished)
+		wg.Done()
+	}()
+
+	if ttyOutput {
+		wg.Add(1)
+		go func() {
+			pkgListDisplay.LiveDisplay(uilive.New())
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	if !ttyOutput {
+		pkgListDisplay.Display(os.Stdout)
 	}
 }
