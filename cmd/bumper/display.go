@@ -8,11 +8,17 @@ import (
 	"time"
 
 	"github.com/bcyran/bumper/bumper"
+	"github.com/fatih/color"
 )
 
 const updateIntervalMs = 100
 
-var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+var (
+	spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+	successColor  = color.New(color.FgGreen).SprintFunc()
+	failureColor  = color.New(color.FgRed).SprintFunc()
+	progressColor = color.New(color.FgYellow).SprintFunc()
+)
 
 type Flusher interface {
 	Flush() error
@@ -76,12 +82,12 @@ func (pkgDisplay *PackageDisplay) String() string {
 	}
 	if pkgDisplay.finished == true {
 		if pkgDisplay.failed == true {
-			bullet = "✗"
+			bullet = failureColor("✗")
 		} else {
-			bullet = "✓"
+			bullet = successColor("✓")
 		}
 	} else {
-		bullet = spinnerFrames[pkgDisplay.spinnerFrame]
+		bullet = progressColor(spinnerFrames[pkgDisplay.spinnerFrame])
 		resultsStrings = append(resultsStrings, "...")
 	}
 	pkgDisplay.mtx.RUnlock()
