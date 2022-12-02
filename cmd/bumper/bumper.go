@@ -3,9 +3,13 @@ package bumper
 import (
 	"errors"
 	"log"
+	"os"
+	"sync"
 
 	"github.com/bcyran/bumper/bumper"
 	"github.com/bcyran/bumper/upstream"
+	"github.com/gosuri/uilive"
+	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 )
 
@@ -49,8 +53,29 @@ func Main(args []string) {
 			handleFinished := func(pkgIndex int) {
 				pkgDisplays[pkgIndex].SetFinished()
 			}
-			go bumper.Run(packages, actions, handleResult, handleFinished)
-			pkgListDisplay.LiveDisplay()
+
+			ttyOutput := isatty.IsTerminal(os.Stdout.Fd())
+
+			wg := sync.WaitGroup{}
+
+			wg.Add(1)
+			go func() {
+				bumper.Run(packages, actions, handleResult, handleFinished)
+				wg.Done()
+			}()
+
+			if ttyOutput {
+				wg.Add(1)
+				go func() {
+					pkgListDisplay.LiveDisplay(uilive.New())
+					wg.Done()
+				}()
+			}
+
+			wg.Wait()
+			if !ttyOutput {
+				pkgListDisplay.Display(os.Stdout)
+			}
 
 			return nil
 		},

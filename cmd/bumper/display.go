@@ -2,17 +2,26 @@ package bumper
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/bcyran/bumper/bumper"
-	"github.com/gosuri/uilive"
 )
 
 const updateIntervalMs = 100
 
 var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+
+type Flusher interface {
+	Flush() error
+}
+
+type WriteFlusher interface {
+	io.Writer
+	Flusher
+}
 
 type PackageDisplay struct {
 	name          string
@@ -81,14 +90,12 @@ func (pkgDisplay *PackageDisplay) String() string {
 }
 
 type PackageListDisplay struct {
-	packages   []*PackageDisplay
-	liveWriter *uilive.Writer
+	packages []*PackageDisplay
 }
 
 func NewPackageListDisplay() *PackageListDisplay {
 	return &PackageListDisplay{
-		packages:   []*PackageDisplay{},
-		liveWriter: uilive.New(),
+		packages: []*PackageDisplay{},
 	}
 }
 
@@ -98,22 +105,16 @@ func (pkgListDisplay *PackageListDisplay) AddPackage(name string) *PackageDispla
 	return newPkgDisplay
 }
 
-func (pkgListDisplay *PackageListDisplay) String() string {
-	outString := ""
+func (pkgListDisplay *PackageListDisplay) Display(out io.Writer) {
 	for _, pkgDisplay := range pkgListDisplay.packages {
-		outString += pkgDisplay.String() + "\n"
+		fmt.Fprintln(out, pkgDisplay.String())
 	}
-	return outString
 }
 
-func (pkgListDisplay *PackageListDisplay) Display() {
-	fmt.Fprintf(pkgListDisplay.liveWriter, pkgListDisplay.String())
-	pkgListDisplay.liveWriter.Flush()
-}
-
-func (pkgListDisplay *PackageListDisplay) LiveDisplay() {
+func (pkgListDisplay *PackageListDisplay) LiveDisplay(out WriteFlusher) {
 	for range time.Tick(updateIntervalMs * time.Millisecond) {
-		pkgListDisplay.Display()
+		pkgListDisplay.Display(out)
+		out.Flush()
 
 		finishedCount := 0
 		for _, pkgDisplay := range pkgListDisplay.packages {
