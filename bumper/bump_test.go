@@ -6,40 +6,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/bcyran/bumper/internal/testutils"
 	"github.com/bcyran/bumper/pack"
 	"github.com/bcyran/bumper/upstream"
 	"github.com/stretchr/testify/assert"
 )
-
-type commandRunnerParams struct {
-	cwd     string
-	command string
-	args    []string
-}
-
-type commandRunnerRetval struct {
-	stdout []byte
-	err    error
-}
-
-// makeFakeCommandRunner creates fake CommandRunner which doesn't use exec.Command.
-// Instead it appends each call params to a slice for later assertions.
-// Each call returns stdout and err values from given retvals slice.
-func makeFakeCommandRunner(retvals *[]commandRunnerRetval) (CommandRunner, *[]commandRunnerParams) {
-	var commandRuns []commandRunnerParams
-	fakeExecCommand := func(cwd string, command string, args ...string) ([]byte, error) {
-		opts := commandRunnerParams{
-			cwd:     cwd,
-			command: command,
-			args:    args,
-		}
-		commandRuns = append(commandRuns, opts)
-		retval := (*retvals)[0]
-		*retvals = (*retvals)[1:]
-		return retval.stdout, retval.err
-	}
-	return fakeExecCommand, &commandRuns
-}
 
 func makeOutdatedPackage(dir string, pkgver string, pkgrel string, upstreamVersion string) *pack.Package {
 	return &pack.Package{
@@ -79,11 +50,11 @@ func TestBumpAction_Success(t *testing.T) {
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString(versionBefore, pkgrelBefore)), 0644)
 
 	// mock return values for two command runs
-	commandRetvals := []commandRunnerRetval{
-		{stdout: []byte{}, err: nil},                // retval for updpkgsums
-		{stdout: []byte(expectedSrcinfo), err: nil}, // retval for makepkg --printsrcinfo
+	commandRetvals := []testutils.CommandRunnerRetval{
+		{Stdout: []byte{}, Err: nil},                // retval for updpkgsums
+		{Stdout: []byte(expectedSrcinfo), Err: nil}, // retval for makepkg --printsrcinfo
 	}
-	fakeCommandRunner, commandRuns := makeFakeCommandRunner(&commandRetvals)
+	fakeCommandRunner, commandRuns := testutils.MakeFakeCommandRunner(&commandRetvals)
 
 	// execute the action with our mocked command runner
 	action := NewBumpAction(fakeCommandRunner)
@@ -103,14 +74,14 @@ func TestBumpAction_Success(t *testing.T) {
 	assert.Equal(t, expectedPkgbuild, string(pkgbuild))
 
 	// updpkgsums command has been ran
-	expectedUpdpkgsumsCommand := commandRunnerParams{
-		cwd: pkg.Path, command: "updpkgsums", args: nil,
+	expectedUpdpkgsumsCommand := testutils.CommandRunnerParams{
+		Cwd: pkg.Path, Command: "updpkgsums", Args: nil,
 	}
 	assert.Equal(t, expectedUpdpkgsumsCommand, (*commandRuns)[0])
 
 	// makepkg --printsrcinfo has been ran and result written to .SRCINFO
-	expectedMakepkgCommand := commandRunnerParams{
-		cwd: pkg.Path, command: "makepkg", args: []string{"--printsrcinfo"},
+	expectedMakepkgCommand := testutils.CommandRunnerParams{
+		Cwd: pkg.Path, Command: "makepkg", Args: []string{"--printsrcinfo"},
 	}
 	assert.Equal(t, expectedMakepkgCommand, (*commandRuns)[1])
 	srcinfo, _ := os.ReadFile(pkg.SrcinfoPath())
@@ -121,7 +92,7 @@ func TestBumpAction_FailBump(t *testing.T) {
 	// bump should fail because there's no PKGBUILD file
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 
-	fakeCommandRunner, _ := makeFakeCommandRunner(&[]commandRunnerRetval{})
+	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&[]testutils.CommandRunnerRetval{})
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
@@ -136,10 +107,10 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
 
-	commandRetvals := []commandRunnerRetval{
-		{stdout: []byte{}, err: fmt.Errorf("foo bar")}, // retval for updpkgsums
+	commandRetvals := []testutils.CommandRunnerRetval{
+		{Stdout: []byte{}, Err: fmt.Errorf("foo bar")}, // retval for updpkgsums
 	}
-	fakeCommandRunner, _ := makeFakeCommandRunner(&commandRetvals)
+	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
@@ -156,11 +127,11 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
 
-	commandRetvals := []commandRunnerRetval{
-		{stdout: []byte{}, err: nil},                   // retval for updpkgsums
-		{stdout: []byte{}, err: fmt.Errorf("foo bar")}, // retval for makepkg
+	commandRetvals := []testutils.CommandRunnerRetval{
+		{Stdout: []byte{}, Err: nil},                   // retval for updpkgsums
+		{Stdout: []byte{}, Err: fmt.Errorf("foo bar")}, // retval for makepkg
 	}
-	fakeCommandRunner, _ := makeFakeCommandRunner(&commandRetvals)
+	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
