@@ -16,7 +16,7 @@ func TestNewGithub_Valid(t *testing.T) {
 
 	result := newGitHubProvider(validUrl)
 
-	assert.Equal(t, expectedResult, *result)
+	assert.Equal(t, &expectedResult, result)
 }
 
 func TestNewGithub_Invalid(t *testing.T) {
@@ -59,9 +59,9 @@ func TestGithubLatestVersion_Release(t *testing.T) {
 			},
 		})
 
-	github := gitHubProvider{owner: "foo", repo: "bar"}
+	gitHub := gitHubProvider{owner: "foo", repo: "bar"}
 
-	result, err := github.LatestVersion()
+	result, err := gitHub.LatestVersion()
 
 	assert.NoError(t, err)
 	assert.Equal(t, Version("1.6.9"), result)
@@ -82,15 +82,15 @@ func TestGithubLatestVersion_Tag(t *testing.T) {
 			{"name": "1.6.8"},
 		})
 
-	github := gitHubProvider{owner: "foo", repo: "bar"}
+	gitHub := gitHubProvider{owner: "foo", repo: "bar"}
 
-	result, err := github.LatestVersion()
+	result, err := gitHub.LatestVersion()
 
 	assert.NoError(t, err)
 	assert.Equal(t, Version("1.6.9"), result)
 }
 
-func TestGithubLatestVersion_NoReleases(t *testing.T) {
+func TestGithubLatestVersion_NoVersions(t *testing.T) {
 	defer gock.Off()
 	gock.New("https://api.github.com").
 		Get("/repos/foo/bar/releases").
@@ -101,9 +101,9 @@ func TestGithubLatestVersion_NoReleases(t *testing.T) {
 		Reply(200).
 		JSON([]interface{}{})
 
-	github := gitHubProvider{owner: "foo", repo: "bar"}
+	gitHub := gitHubProvider{owner: "foo", repo: "bar"}
 
-	_, err := github.LatestVersion()
+	_, err := gitHub.LatestVersion()
 
 	assert.ErrorIs(t, err, ErrVersionNotFound)
 }
@@ -119,9 +119,9 @@ func TestGithubLatestVersion_4xx(t *testing.T) {
 		Reply(401).
 		JSON([]interface{}{})
 
-	github := gitHubProvider{owner: "foo", repo: "bar"}
+	gitHub := gitHubProvider{owner: "foo", repo: "bar"}
 
-	_, err := github.LatestVersion()
+	_, err := gitHub.LatestVersion()
 
 	assert.ErrorIs(t, err, ErrVersionNotFound)
 }
@@ -137,9 +137,9 @@ func TestGithubLatestVersion_5xx(t *testing.T) {
 		Reply(501).
 		JSON([]interface{}{})
 
-	github := gitHubProvider{owner: "foo", repo: "bar"}
+	gitHub := gitHubProvider{owner: "foo", repo: "bar"}
 
-	_, err := github.LatestVersion()
+	_, err := gitHub.LatestVersion()
 
 	assert.ErrorIs(t, err, ErrProviderError)
 }
