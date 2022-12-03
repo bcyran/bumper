@@ -2,7 +2,6 @@ package bumper
 
 import (
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 
@@ -10,18 +9,6 @@ import (
 )
 
 const newPkgrel = "pkgrel=1"
-
-type CommandRunner = func(cwd string, command string, args ...string) ([]byte, error)
-
-func ExecCommand(cwd string, command string, args ...string) ([]byte, error) {
-	cmd := exec.Command(command, args...)
-	cmd.Dir = cwd
-	stdout, err := cmd.Output()
-	if err != nil {
-		return []byte{}, err
-	}
-	return stdout, nil
-}
 
 var pkgrelPattern = regexp.MustCompile(`pkgrel=\d`)
 
