@@ -13,14 +13,16 @@ import (
 )
 
 type DoActions struct {
-	bump bool
-	make bool
+	bump   bool
+	make   bool
+	commit bool
 }
 
 func Main(args []string) {
 	doActions := DoActions{
-		bump: true,
-		make: true,
+		bump:   true,
+		make:   true,
+		commit: true,
 	}
 
 	app := &cli.App{
@@ -42,6 +44,13 @@ func Main(args []string) {
 				Usage:       "make (build) bumped packages",
 				Value:       true,
 				Destination: &doActions.make,
+			},
+			&cli.BoolFlag{
+				Name:        "commit",
+				Aliases:     []string{"c"},
+				Usage:       "commit changes",
+				Value:       true,
+				Destination: &doActions.commit,
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -89,6 +98,10 @@ func createActions(doActions DoActions) []bumper.Action {
 
 	if doActions.make == true {
 		actions = append(actions, bumper.NewBuildAction(bumper.ExecCommand))
+	}
+
+	if doActions.commit == true {
+		actions = append(actions, bumper.NewCommitAction(bumper.ExecCommand))
 	}
 
 	return actions
