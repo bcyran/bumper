@@ -121,3 +121,15 @@ func TestPushAction_Skip(t *testing.T) {
 	}
 	assert.Equal(t, expectedResult, result)
 }
+
+func TestPushActionResult_String(t *testing.T) {
+	cases := map[pushActionResult]string{
+		{BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS}}: "pushed",
+		{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}:  "push failed",
+		{BaseActionResult: BaseActionResult{Status: ACTION_SKIPPED}}: "",
+	}
+
+	for result, expectedString := range cases {
+		assert.Equal(t, expectedString, result.String())
+	}
+}
