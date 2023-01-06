@@ -16,6 +16,7 @@ type DoActions struct {
 	bump   bool
 	make   bool
 	commit bool
+	push   bool
 }
 
 func Main(args []string) {
@@ -23,6 +24,7 @@ func Main(args []string) {
 		bump:   true,
 		make:   true,
 		commit: true,
+		push:   false,
 	}
 
 	app := &cli.App{
@@ -51,6 +53,13 @@ func Main(args []string) {
 				Usage:       "commit changes",
 				Value:       true,
 				Destination: &doActions.commit,
+			},
+			&cli.BoolFlag{
+				Name:        "push",
+				Aliases:     []string{"p"},
+				Usage:       "push commited changes",
+				Value:       false,
+				Destination: &doActions.push,
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -102,6 +111,12 @@ func createActions(doActions DoActions) []bumper.Action {
 
 	if doActions.commit == true {
 		actions = append(actions, bumper.NewCommitAction(bumper.ExecCommand))
+	} else {
+		return actions
+	}
+
+	if doActions.push == true {
+		actions = append(actions, bumper.NewPushAction(bumper.ExecCommand))
 	}
 
 	return actions
