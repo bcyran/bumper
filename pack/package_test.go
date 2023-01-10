@@ -9,30 +9,58 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLoadPackage_Valid(t *testing.T) {
-	packagePath := filepath.Join(t.TempDir(), "package")
-	srcinfo := []byte(`
+var (
+	srcinfoBytes = []byte(`
 pkgbase = expected_name
         pkgname = expected_name
         url = expected_url
         pkgver = expected_ver
         pkgrel = expected_rel
 `)
-	testutils.CreatePackage(packagePath, []byte{}, srcinfo)
+
+	expectedSrcinfo = Srcinfo{
+		Pkgbase: "expected_name",
+		Url:     "expected_url",
+		FullVersion: &FullVersion{
+			Pkgver: "expected_ver",
+			Pkgrel: "expected_rel",
+		},
+	}
+)
+
+func TestLoadPackage_Valid(t *testing.T) {
+	packagePath := filepath.Join(t.TempDir(), "package")
+	testutils.CreatePackage(packagePath, []byte{}, srcinfoBytes)
 
 	loadedPackage, err := LoadPackage(packagePath)
 
 	assert.NoError(t, err)
 	expectedPackage := Package{
-		Path: packagePath,
-		Srcinfo: &Srcinfo{
-			Pkgbase: "expected_name",
-			Url:     "expected_url",
-			FullVersion: &FullVersion{
-				Pkgver: "expected_ver",
-				Pkgrel: "expected_rel",
-			},
-		},
+		Path:    packagePath,
+		Srcinfo: &expectedSrcinfo,
+		IsVCS:   false,
+	}
+	assert.Equal(t, expectedPackage, *loadedPackage)
+}
+
+func TestLoadPackage_ValidVCS(t *testing.T) {
+	packagePath := filepath.Join(t.TempDir(), "package")
+	pkgbuildBytes := []byte(`
+pkgname = expected_name
+pkgver() {
+}
+build() {
+}
+`)
+	testutils.CreatePackage(packagePath, pkgbuildBytes, srcinfoBytes)
+
+	loadedPackage, err := LoadPackage(packagePath)
+
+	assert.NoError(t, err)
+	expectedPackage := Package{
+		Path:    packagePath,
+		Srcinfo: &expectedSrcinfo,
+		IsVCS:   true,
 	}
 	assert.Equal(t, expectedPackage, *loadedPackage)
 }

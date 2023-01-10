@@ -43,6 +43,11 @@ func NewCheckAction(versionProviderFactory versionProviderFactory) *CheckAction 
 func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &checkActionResult{}
 
+	if pkg.IsVCS {
+		actionResult.Status = ACTION_SKIPPED
+		return actionResult
+	}
+
 	provider := action.versionProviderFactory(pkg.Url)
 	if provider == nil {
 		actionResult.Status = ACTION_FAILED

@@ -18,6 +18,7 @@ var (
 	successColor  = color.New(color.FgGreen).SprintFunc()
 	failureColor  = color.New(color.FgRed).SprintFunc()
 	progressColor = color.New(color.FgYellow).SprintFunc()
+	skippedColor  = color.New(color.FgBlue).SprintFunc()
 )
 
 type Flusher interface {
@@ -34,6 +35,7 @@ type PackageDisplay struct {
 	actionResults []bumper.ActionResult
 	finished      bool
 	failed        bool
+	skipped       bool
 	spinnerFrame  int
 	mtx           *sync.RWMutex
 }
@@ -44,6 +46,7 @@ func newPackageDisplay(name string) *PackageDisplay {
 		actionResults: []bumper.ActionResult{},
 		finished:      false,
 		failed:        false,
+		skipped:       false,
 		spinnerFrame:  0,
 		mtx:           &sync.RWMutex{},
 	}
@@ -61,6 +64,9 @@ func (pkgDisplay *PackageDisplay) SetFinished() {
 	lastResult := pkgDisplay.actionResults[len(pkgDisplay.actionResults)-1]
 	if lastResult.GetStatus() == bumper.ACTION_FAILED {
 		pkgDisplay.failed = true
+	}
+	if len(pkgDisplay.actionResults) == 1 && lastResult.GetStatus() == bumper.ACTION_SKIPPED {
+		pkgDisplay.skipped = true
 	}
 	pkgDisplay.mtx.Unlock()
 }
@@ -83,6 +89,8 @@ func (pkgDisplay *PackageDisplay) String() string {
 	if pkgDisplay.finished == true {
 		if pkgDisplay.failed == true {
 			bullet = failureColor("✗")
+		} else if pkgDisplay.skipped == true {
+			bullet = skippedColor("∅")
 		} else {
 			bullet = successColor("✓")
 		}

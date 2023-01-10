@@ -85,3 +85,42 @@ func TestRun_Success(t *testing.T) {
 	assert.ElementsMatch(t, actualResults, expectedResults)
 	assert.ElementsMatch(t, actualFinished, expectedFinished)
 }
+
+func TestRun_Skip(t *testing.T) {
+	// packages and actions we will run on them
+	packages := []pack.Package{
+		{Srcinfo: &pack.Srcinfo{Pkgbase: "pkgA"}},
+	}
+	actions := []Action{
+		newTestAction(ACTION_SKIPPED, "skipped, should stop now"),
+		newTestAction(ACTION_SUCCESS, "this shouldn't be executed"),
+	}
+
+	// expected values
+	expectedResults := [][]ActionResult{
+		{
+			newTestActionResult(ACTION_SKIPPED, "pkgA: skipped, should stop now"),
+		},
+	}
+	expectedFinished := []bool{true}
+
+	// actual values
+	actualResults := make([][]ActionResult, len(packages))
+	for i := range actualResults {
+		actualResults[i] = []ActionResult{}
+	}
+	actualFinished := make([]bool, len(packages))
+
+	// callbacks definition and running SUT
+	handleResult := func(pkgIndex int, result ActionResult) {
+		actualResults[pkgIndex] = append(actualResults[pkgIndex], result)
+	}
+	handleFinished := func(pkgIndex int) {
+		actualFinished[pkgIndex] = true
+	}
+	Run(packages, actions, handleResult, handleFinished)
+
+	// check if everything matches
+	assert.ElementsMatch(t, actualResults, expectedResults)
+	assert.ElementsMatch(t, actualFinished, expectedFinished)
+}

@@ -3,8 +3,10 @@ package pack
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bcyran/bumper/upstream"
 )
@@ -12,6 +14,8 @@ import (
 var (
 	ErrInvalidPath = errors.New("invalid package path")
 	ErrNotAPackage = errors.New("not a package")
+
+	vcsToken = "pkgver()"
 )
 
 type Package struct {
@@ -19,6 +23,7 @@ type Package struct {
 	Path            string
 	UpstreamVersion upstream.Version
 	IsOutdated      bool
+	IsVCS           bool
 }
 
 func (pkg *Package) PkgbuildPath() string {
@@ -85,5 +90,21 @@ func makePackage(path string) (*Package, error) {
 		return &Package{}, err
 	}
 
-	return &Package{Path: absPath, Srcinfo: srcinfo}, nil
+	isVCS, err := isVCS(pkgbuildPath(path))
+	if err != nil {
+		return &Package{}, err
+	}
+
+	return &Package{Path: absPath, Srcinfo: srcinfo, IsVCS: isVCS}, nil
+}
+
+// isVCS checks if package is a VCS package (PKGBUILD contains 'pkgver()').
+func isVCS(pkgbuildPath string) (bool, error) {
+	pkgBuildBytes, err := ioutil.ReadFile(pkgbuildPath)
+	if err != nil {
+		return false, err
+	}
+	pkgBuild := string(pkgBuildBytes)
+
+	return strings.Contains(pkgBuild, vcsToken), nil
 }
