@@ -16,6 +16,8 @@ pkgbase = expected_base
         url = expected_url
         pkgver     = expected_ver
         pkgrel =     expected_rel
+		source = https://fake.source
+		source = baz::https://foo.bar
 	`)
 	ioutil.WriteFile(srcinfoPath, srcinfoText, 0644)
 
@@ -29,6 +31,7 @@ pkgbase = expected_base
 			Pkgver: Version("expected_ver"),
 			Pkgrel: "expected_rel",
 		},
+		Source: []string{"https://fake.source", "baz::https://foo.bar"},
 	}
 	assert.Equal(t, expectedSrcinfo, *parsedSrcinfo)
 }

@@ -30,6 +30,7 @@ type FullVersion struct {
 type Srcinfo struct {
 	Pkgbase string
 	Url     string
+	Source  []string
 	*FullVersion
 }
 
@@ -54,6 +55,11 @@ func ParseSrcinfo(path string) (*Srcinfo, error) {
 			Pkgrel: rawInfo["pkgrel"][0],
 		},
 	}
+
+	if sourceValues, hasSourceValues := rawInfo["source"]; hasSourceValues {
+		srcinfo.Source = sourceValues
+	}
+
 	return &srcinfo, nil
 }
 
