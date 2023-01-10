@@ -14,8 +14,8 @@ func TestParseSrcinfo_Valid(t *testing.T) {
 pkgbase = expected_base
         pkgname = expected_name
         url = expected_url
-        pkgver = expected_ver
-        pkgrel = expected_rel
+        pkgver     = expected_ver
+        pkgrel =     expected_rel
 	`)
 	ioutil.WriteFile(srcinfoPath, srcinfoText, 0644)
 

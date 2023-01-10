@@ -69,9 +69,9 @@ func rawParseSrcinfo(path string) (rawSrcinfo, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		if strings.Contains(line, srcinfoSeparator) {
-			parts := strings.SplitN(line, srcinfoSeparator, 2)
-			fieldName, fieldValue := parts[0], parts[1]
+		fieldName, fieldValue, separatorFound := strings.Cut(line, srcinfoSeparator)
+		if separatorFound {
+			fieldName, fieldValue = strings.TrimSpace(fieldName), strings.TrimSpace(fieldValue)
 			rawInfo[fieldName] = append(rawInfo[fieldName], fieldValue)
 		}
 	}
