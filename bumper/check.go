@@ -2,10 +2,13 @@ package bumper
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bcyran/bumper/pack"
 	"github.com/bcyran/bumper/upstream"
 )
+
+const sourceSeparator = "::"
 
 type checkActionResult struct {
 	BaseActionResult
@@ -48,13 +51,8 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 		return actionResult
 	}
 
-	provider := action.versionProviderFactory(pkg.Url)
-	if provider == nil {
-		actionResult.Status = ACTION_FAILED
-		return actionResult
-	}
-
-	upstreamVersion, err := provider.LatestVersion()
+	upstreamUrls := getPackageUrls(pkg)
+	upstreamVersion, err := action.tryGetUpstreamVersion(upstreamUrls)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
 		return actionResult
@@ -70,4 +68,38 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult.cmpResult = cmpResult
 
 	return actionResult
+}
+
+// tryGetUpstreamVersion tries to create and use a version provider for each of the given URLs.
+func (action *CheckAction) tryGetUpstreamVersion(urls []string) (upstream.Version, error) {
+	for _, url := range urls {
+		provider := action.versionProviderFactory(url)
+		if provider == nil {
+			continue
+		}
+
+		upstreamVersion, err := provider.LatestVersion()
+		if err == nil {
+			return upstreamVersion, nil
+		}
+	}
+
+	return upstream.Version(""), fmt.Errorf("could not find upstream version")
+}
+
+// getPackageUrls extracts all relevant URLs from given package.
+// This includes both 'url' field and 'source' fields.
+func getPackageUrls(pkg *pack.Package) []string {
+	var urls = []string{pkg.Url}
+
+	for _, sourceEntry := range pkg.Source {
+		// source entry might be in the form 'file.bar::https://path/to/file.bar'
+		_, sourceUrl, separatorFound := strings.Cut(sourceEntry, sourceSeparator)
+		if !separatorFound {
+			sourceUrl = sourceEntry
+		}
+		urls = append(urls, sourceUrl)
+	}
+
+	return urls
 }

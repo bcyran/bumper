@@ -71,6 +71,27 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 }
 
+func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
+	checkedUrls := []string{}
+	verProvFactory := func(url string) upstream.VersionProvider {
+		checkedUrls = append(checkedUrls, url)
+		return &fakeVersionProvider{err: fmt.Errorf("some err")}
+	}
+	action := NewCheckAction(verProvFactory)
+	pkg := pack.Package{
+		Srcinfo: &pack.Srcinfo{
+			Url:    "first.url",
+			Source: []string{"second.url", "file.name::third.url"},
+		},
+	}
+
+	result := action.Execute(&pkg)
+
+	expectedCheckedUrls := []string{"first.url", "second.url", "third.url"}
+	assert.ElementsMatch(t, expectedCheckedUrls, checkedUrls)
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+}
+
 func TestCheckActionResult_String(t *testing.T) {
 	cases := map[checkActionResult]string{
 		{
