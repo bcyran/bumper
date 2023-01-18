@@ -37,16 +37,23 @@ func TestCheckAction_Success(t *testing.T) {
 
 	result := action.Execute(&pkg)
 
-	expectedUpstreamVersion := upstream.Version("2.0.0")
-	expectedResult := &checkActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-		currentVersion:   pack.Version("1.0.0"),
-		upstreamVersion:  expectedUpstreamVersion,
-		cmpResult:        1,
-	}
-	assert.Equal(t, expectedResult, result)
-	assert.Equal(t, expectedUpstreamVersion, pkg.UpstreamVersion)
+	// result assertions
+	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, "1.0.0 -> 2.0.0", result.String())
+	// package assertions
+	assert.Equal(t, upstream.Version("2.0.0"), pkg.UpstreamVersion)
 	assert.True(t, pkg.IsOutdated)
+}
+
+func TestCheckAction_Skip(t *testing.T) {
+	verProvFactory := func(url string) upstream.VersionProvider { return nil }
+	action := NewCheckAction(verProvFactory)
+	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}, IsVCS: true}
+
+	result := action.Execute(&pkg)
+
+	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, "-", result.String())
 }
 
 func TestCheckAction_FailNoProvider(t *testing.T) {
@@ -57,6 +64,7 @@ func TestCheckAction_FailNoProvider(t *testing.T) {
 	result := action.Execute(&pkg)
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "?", result.String())
 }
 
 func TestCheckAction_FailProviderFailed(t *testing.T) {
@@ -69,6 +77,7 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 	result := action.Execute(&pkg)
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "?", result.String())
 }
 
 func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
@@ -87,16 +96,15 @@ func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
 
 	result := action.Execute(&pkg)
 
-	expectedCheckedUrls := []string{"first.url", "second.url", "third.url"}
-	assert.ElementsMatch(t, expectedCheckedUrls, checkedUrls)
+	// upstream provider assertions
+	assert.ElementsMatch(t, []string{"first.url", "second.url", "third.url"}, checkedUrls)
+	// result assertions
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "?", result.String())
 }
 
 func TestCheckActionResult_String(t *testing.T) {
 	cases := map[checkActionResult]string{
-		{
-			BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-		}: "?",
 		{
 			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
 			currentVersion:   pack.Version("curr"),

@@ -27,11 +27,9 @@ func TestPushAction_Success(t *testing.T) {
 	action := NewPushAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	// expect result to be correct
-	expectedResult := &pushActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-	}
-	assert.Equal(t, expectedResult, result)
+	// result assertions
+	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, "pushed", result.String())
 
 	// expect valid git branch command
 	expectedBranchCommand := testutils.CommandRunnerParams{
@@ -52,6 +50,27 @@ func TestPushAction_Success(t *testing.T) {
 	assert.Equal(t, expectedCommitCommand, (*commandRuns)[2])
 }
 
+func TestPushAction_Skip(t *testing.T) {
+	pkg := &pack.Package{
+		Path:       "/foo/bar/baz",
+		IsOutdated: true,
+	}
+
+	// mock return values for commands
+	commandRetvals := []testutils.CommandRunnerRetval{
+		{Stdout: []byte("master\n"), Err: nil}, // checking branch
+		{Stdout: []byte("0\t0\n"), Err: nil},   // checking if up to date with origin
+	}
+	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
+
+	// execute the action with our mocked command runner
+	action := NewPushAction(fakeCommandRunner)
+	result := action.Execute(pkg)
+
+	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, "", result.String())
+}
+
 func TestPushAction_FailWrongBranch(t *testing.T) {
 	pkg := &pack.Package{
 		Path:       "/foo/bar/baz",
@@ -68,11 +87,8 @@ func TestPushAction_FailWrongBranch(t *testing.T) {
 	action := NewPushAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	// expect result to be correct
-	expectedResult := &pushActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-	}
-	assert.Equal(t, expectedResult, result)
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "push failed", result.String())
 }
 
 func TestPushAction_FailGitError(t *testing.T) {
@@ -91,45 +107,6 @@ func TestPushAction_FailGitError(t *testing.T) {
 	action := NewPushAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	// expect result to be correct
-	expectedResult := &pushActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-	}
-	assert.Equal(t, expectedResult, result)
-}
-
-func TestPushAction_Skip(t *testing.T) {
-	pkg := &pack.Package{
-		Path:       "/foo/bar/baz",
-		IsOutdated: true,
-	}
-
-	// mock return values for commands
-	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte("master\n"), Err: nil}, // checking branch
-		{Stdout: []byte("0\t0\n"), Err: nil},   // checking if up to date with origin
-	}
-	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
-
-	// execute the action with our mocked command runner
-	action := NewPushAction(fakeCommandRunner)
-	result := action.Execute(pkg)
-
-	// expect result to be correct
-	expectedResult := &pushActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SKIPPED},
-	}
-	assert.Equal(t, expectedResult, result)
-}
-
-func TestPushActionResult_String(t *testing.T) {
-	cases := map[pushActionResult]string{
-		{BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS}}: "pushed",
-		{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}:  "push failed",
-		{BaseActionResult: BaseActionResult{Status: ACTION_SKIPPED}}: "",
-	}
-
-	for result, expectedString := range cases {
-		assert.Equal(t, expectedString, result.String())
-	}
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "push failed", result.String())
 }

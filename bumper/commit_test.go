@@ -30,11 +30,9 @@ func TestCommitAction_Success(t *testing.T) {
 	action := NewCommitAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	// expect result to be correct
-	expectedResult := &commitActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-	}
-	assert.Equal(t, expectedResult, result)
+	// result assertions
+	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, "committed", result.String())
 
 	// expect valid git status command
 	expectedStatusCommand := testutils.CommandRunnerParams{
@@ -56,31 +54,6 @@ func TestCommitAction_Success(t *testing.T) {
 	assert.Equal(t, expectedCommitCommand, (*commandRuns)[2])
 }
 
-func TestCommitAction_Fail(t *testing.T) {
-	// our Package struct
-	pkg := &pack.Package{
-		Path:            "/foo/bar/baz",
-		UpstreamVersion: upstream.Version("1.2.3"),
-		IsOutdated:      true,
-	}
-
-	// mock return values for commands
-	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte(" M .SRCINFO\x00 M PKGBUILD\x00 A foo.txt\x00"), Err: nil}, // unexpected git status
-	}
-	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
-
-	// execute the action with our mocked command runner
-	action := NewCommitAction(fakeCommandRunner)
-	result := action.Execute(pkg)
-
-	// expect result to be correct
-	expectedResult := &commitActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-	}
-	assert.Equal(t, expectedResult, result)
-}
-
 func TestCommitAction_Skip(t *testing.T) {
 	// our Package struct
 	pkg := &pack.Package{
@@ -99,21 +72,28 @@ func TestCommitAction_Skip(t *testing.T) {
 	action := NewCommitAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	// expect result to be correct
-	expectedResult := &commitActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SKIPPED},
-	}
-	assert.Equal(t, expectedResult, result)
+	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, "", result.String())
 }
 
-func TestCommitActionResult_String(t *testing.T) {
-	cases := map[commitActionResult]string{
-		{BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS}}: "committed",
-		{BaseActionResult: BaseActionResult{Status: ACTION_FAILED}}:  "commit failed",
-		{BaseActionResult: BaseActionResult{Status: ACTION_SKIPPED}}: "",
+func TestCommitAction_Fail(t *testing.T) {
+	// our Package struct
+	pkg := &pack.Package{
+		Path:            "/foo/bar/baz",
+		UpstreamVersion: upstream.Version("1.2.3"),
+		IsOutdated:      true,
 	}
 
-	for result, expectedString := range cases {
-		assert.Equal(t, expectedString, result.String())
+	// mock return values for commands
+	commandRetvals := []testutils.CommandRunnerRetval{
+		{Stdout: []byte(" M .SRCINFO\x00 M PKGBUILD\x00 A foo.txt\x00"), Err: nil}, // unexpected git status
 	}
+	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
+
+	// execute the action with our mocked command runner
+	action := NewCommitAction(fakeCommandRunner)
+	result := action.Execute(pkg)
+
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "commit failed", result.String())
 }

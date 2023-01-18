@@ -60,16 +60,11 @@ func TestBumpAction_Success(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	// returned result is correct
-	expectedResult := &bumpActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-		bumpOk:           true,
-		updpkgsumsOk:     true,
-		makepkgOk:        true,
-	}
-	assert.Equal(t, expectedResult, result)
+	// result assertions
+	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, "bumped", result.String())
 
-	// pkgver and pkgrel are updated in pkgbuild
+	// PKGBUILD assertions
 	pkgbuild, _ := os.ReadFile(pkg.PkgbuildPath())
 	assert.Equal(t, expectedPkgbuild, string(pkgbuild))
 
@@ -88,6 +83,21 @@ func TestBumpAction_Success(t *testing.T) {
 	assert.Equal(t, expectedSrcinfo, string(srcinfo))
 }
 
+func TestBumpAction_Skip(t *testing.T) {
+	// bump should be skipped because package is not outdated
+	pkg := &pack.Package{IsOutdated: false}
+
+	fakeCommandRunner, commandRuns := testutils.MakeFakeCommandRunner(&[]testutils.CommandRunnerRetval{})
+	action := NewBumpAction(fakeCommandRunner)
+	result := action.Execute(pkg)
+
+	// result assertions
+	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, "", result.String())
+	// command assertions
+	assert.Len(t, *commandRuns, 0) // no commands ran
+}
+
 func TestBumpAction_FailBump(t *testing.T) {
 	// bump should fail because there's no PKGBUILD file
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
@@ -96,11 +106,8 @@ func TestBumpAction_FailBump(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	expectedResult := &bumpActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-		bumpOk:           false,
-	}
-	assert.Equal(t, expectedResult, result)
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "bump failed", result.String())
 }
 
 func TestBumpAction_FailUpdpkgsums(t *testing.T) {
@@ -115,12 +122,8 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	expectedResult := &bumpActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-		bumpOk:           true,
-		updpkgsumsOk:     false,
-	}
-	assert.Equal(t, expectedResult, result)
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "updpkgsums failed", result.String())
 }
 
 func TestBumpAction_FailMakepkg(t *testing.T) {
@@ -136,38 +139,6 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	expectedResult := &bumpActionResult{
-		BaseActionResult: BaseActionResult{Status: ACTION_FAILED},
-		bumpOk:           true,
-		updpkgsumsOk:     true,
-		makepkgOk:        false,
-	}
-	assert.Equal(t, expectedResult, result)
-}
-
-func TestBumpActionResult_String(t *testing.T) {
-	cases := map[bumpActionResult]string{
-		{
-			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-		}: "bumped",
-		{
-			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-			bumpOk:           false,
-		}: "bump failed",
-		{
-			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-			bumpOk:           true,
-			updpkgsumsOk:     false,
-		}: "updpkgsums failed",
-		{
-			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
-			bumpOk:           true,
-			updpkgsumsOk:     true,
-			makepkgOk:        false,
-		}: "makepkg failed",
-	}
-
-	for result, expectedString := range cases {
-		assert.Equal(t, expectedString, result.String())
-	}
+	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, "makepkg failed", result.String())
 }
