@@ -72,19 +72,28 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 
 // tryGetUpstreamVersion tries to create and use a version provider for each of the given URLs.
 func (action *CheckAction) tryGetUpstreamVersion(urls []string) (upstream.Version, error) {
+	providers := []upstream.VersionProvider{}
 	for _, url := range urls {
-		provider := action.versionProviderFactory(url)
-		if provider == nil {
-			continue
-		}
-
-		upstreamVersion, err := provider.LatestVersion()
-		if err == nil {
-			return upstreamVersion, nil
+		if provider := action.versionProviderFactory(url); provider != nil {
+			providers = append(providers, provider)
 		}
 	}
 
-	return upstream.Version(""), fmt.Errorf("could not find upstream version")
+	if len(providers) == 0 {
+		return upstream.Version(""), fmt.Errorf("no upstream provider found")
+	}
+
+	var upstreamErr error
+	for _, provider := range providers {
+		upstreamVersion, err := provider.LatestVersion()
+		if err == nil {
+			return upstreamVersion, nil
+		} else {
+			upstreamErr = err
+		}
+	}
+
+	return upstream.Version(""), fmt.Errorf("upstream provider error: %w", upstreamErr)
 }
 
 // getPackageUrls extracts all relevant URLs from given package.

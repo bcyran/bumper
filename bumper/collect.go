@@ -1,7 +1,6 @@
 package bumper
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -13,12 +12,8 @@ import (
 // Depth 0 means only given directory is searched.
 // Depth 1 checks subdirectories as well, etc...
 func CollectPackages(path string, depth int) ([]pack.Package, error) {
-	fileInfo, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		return []pack.Package{}, fmt.Errorf("%w: doesn't exist or not accessible", pack.ErrInvalidPath)
-	}
-	if !fileInfo.IsDir() {
-		return []pack.Package{}, fmt.Errorf("%w: not a directory", pack.ErrInvalidPath)
+	if err := pack.ValidateIsDir(path); err != nil {
+		return []pack.Package{}, err
 	}
 
 	return collectPackages(path, depth), nil

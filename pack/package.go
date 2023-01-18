@@ -36,34 +36,34 @@ func (pkg *Package) SrcinfoPath() string {
 
 // LoadPackage tries to create Package struct based on given package dir path.
 func LoadPackage(path string) (*Package, error) {
-	if err := validateIsDir(path); err != nil {
+	if err := ValidateIsDir(path); err != nil {
 		return &Package{}, err
 	}
-	if err := validateIsPackage(path); err != nil {
+	if err := ValidateIsPackage(path); err != nil {
 		return &Package{}, err
 	}
 	return makePackage(path)
 }
 
-// validateIsDir checks whatever given path leads to an existing directory.
-func validateIsDir(path string) error {
+// ValidateIsDir checks whatever given path leads to an existing directory.
+func ValidateIsDir(path string) error {
 	fileInfo, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("%w: doesn't exist or not accessible", ErrInvalidPath)
+		return fmt.Errorf("%w: %s doesn't exist or not accessible", ErrInvalidPath, path)
 	}
 	if !fileInfo.IsDir() {
-		return fmt.Errorf("%w: not a directory", ErrInvalidPath)
+		return fmt.Errorf("%w: %s is not a directory", ErrInvalidPath, path)
 	}
 	return nil
 }
 
-// validateIsPackage checks whatever the directory at given path is an AUR package.
-func validateIsPackage(path string) error {
+// ValidateIsPackage checks whatever the directory at given path is an AUR package.
+func ValidateIsPackage(path string) error {
 	if _, err := os.Stat(pkgbuildPath(path)); os.IsNotExist(err) {
-		return fmt.Errorf("%w: missing PKGBUILD", ErrNotAPackage)
+		return fmt.Errorf("%w: %s missing PKGBUILD", ErrNotAPackage, path)
 	}
 	if _, err := os.Stat(srcinfoPath(path)); os.IsNotExist(err) {
-		return fmt.Errorf("%w: missing .SRCINFO", ErrNotAPackage)
+		return fmt.Errorf("%w: %s missing .SRCINFO", ErrNotAPackage, path)
 	}
 	return nil
 }

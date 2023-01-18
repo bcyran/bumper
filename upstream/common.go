@@ -18,16 +18,16 @@ var (
 func httpGetJSON(url string, target interface{}) error {
 	resp, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrRequestError, err)
+		return fmt.Errorf("%w: GET %s %s", ErrRequestError, url, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusInternalServerError {
-		return fmt.Errorf("%w: status %d", ErrProviderError, resp.StatusCode)
+		return fmt.Errorf("%w: GET %s status %d", ErrProviderError, url, resp.StatusCode)
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("%w: status %d", ErrVersionNotFound, resp.StatusCode)
+		return fmt.Errorf("%w: GET %s status %d", ErrVersionNotFound, url, resp.StatusCode)
 	}
 
 	return json.NewDecoder(resp.Body).Decode(&target)

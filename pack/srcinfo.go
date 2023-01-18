@@ -43,7 +43,7 @@ func ParseSrcinfo(path string) (*Srcinfo, error) {
 
 	for _, fieldName := range requiredFields {
 		if len(rawInfo[fieldName]) != 1 {
-			return &Srcinfo{}, fmt.Errorf("%w: missing/invalid '%s' value", ErrInvalidSrcinfo, fieldName)
+			return &Srcinfo{}, fmt.Errorf("%w: %s missing/invalid '%s' value", ErrInvalidSrcinfo, path, fieldName)
 		}
 	}
 

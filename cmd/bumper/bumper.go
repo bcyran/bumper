@@ -1,8 +1,10 @@
 package bumper
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/bcyran/bumper/bumper"
@@ -73,6 +75,12 @@ func Main(args []string) {
 				return cli.Exit("Too many arguments, only one path allowed!", 1)
 			}
 
+			workDir, err := filepath.Abs(workDir)
+			if err != nil {
+				fmt.Printf("Fatal error, invalid path: %v.\n", err)
+				os.Exit(1)
+			}
+
 			actions := createActions(doActions)
 			runBumper(workDir, actions)
 
@@ -125,7 +133,13 @@ func createActions(doActions DoActions) []bumper.Action {
 func runBumper(workDir string, actions []bumper.Action) {
 	packages, err := bumper.CollectPackages(workDir, 1)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Fatal error, could not collect packages: %v.\n", err)
+		os.Exit(1)
+	}
+
+	if len(packages) == 0 {
+		fmt.Printf("No AUR packages found.\n")
+		os.Exit(1)
 	}
 
 	pkgListDisplay := NewPackageListDisplay()
