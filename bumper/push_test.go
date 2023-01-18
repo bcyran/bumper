@@ -89,6 +89,7 @@ func TestPushAction_FailWrongBranch(t *testing.T) {
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "push failed", result.String())
+	assert.ErrorContains(t, result.GetError(), "not on master branch")
 }
 
 func TestPushAction_FailGitError(t *testing.T) {
@@ -98,8 +99,9 @@ func TestPushAction_FailGitError(t *testing.T) {
 	}
 
 	// mock return values for commands
+	expectedErr := "uh oh, git push failed"
 	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte{}, Err: fmt.Errorf("some error")}, // checking branch
+		{Stdout: []byte{}, Err: fmt.Errorf(expectedErr)}, // checking branch
 	}
 	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 
@@ -109,4 +111,5 @@ func TestPushAction_FailGitError(t *testing.T) {
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "push failed", result.String())
+	assert.ErrorContains(t, result.GetError(), expectedErr)
 }

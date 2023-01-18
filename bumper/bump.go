@@ -51,24 +51,27 @@ func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 		return actionResult
 	}
 
-	if result := action.bump(pkg); result == false {
+	if err := action.bump(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		actionResult.bumpOk = false
 		return actionResult
 	} else {
 		actionResult.bumpOk = true
 	}
 
-	if result := action.updpkgsums(pkg); result == false {
+	if err := action.updpkgsums(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		actionResult.updpkgsumsOk = false
 		return actionResult
 	} else {
 		actionResult.updpkgsumsOk = true
 	}
 
-	if result := action.makepkg(pkg); result == false {
+	if err := action.makepkg(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		actionResult.makepkgOk = false
 		return actionResult
 	} else {
@@ -80,10 +83,10 @@ func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 	return actionResult
 }
 
-func (action *BumpAction) bump(pkg *pack.Package) bool {
+func (action *BumpAction) bump(pkg *pack.Package) error {
 	pkgbuild, err := os.ReadFile(pkg.PkgbuildPath())
 	if err != nil {
-		return false
+		return err
 	}
 	updatedPkgbuild := strings.ReplaceAll(
 		string(pkgbuild), pkg.Pkgver.GetVersionStr(), pkg.UpstreamVersion.GetVersionStr(),
@@ -93,27 +96,20 @@ func (action *BumpAction) bump(pkg *pack.Package) bool {
 	}
 	err = os.WriteFile(pkg.PkgbuildPath(), []byte(updatedPkgbuild), 0644)
 	if err != nil {
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
-func (action *BumpAction) updpkgsums(pkg *pack.Package) bool {
+func (action *BumpAction) updpkgsums(pkg *pack.Package) error {
 	_, err := action.commandRunner(pkg.Path, "updpkgsums")
-	if err != nil {
-		return false
-	}
-	return true
+	return err
 }
 
-func (action *BumpAction) makepkg(pkg *pack.Package) bool {
+func (action *BumpAction) makepkg(pkg *pack.Package) error {
 	srcinfo, err := action.commandRunner(pkg.Path, "makepkg", "--printsrcinfo")
 	if err != nil {
-		return false
+		return err
 	}
-	err = os.WriteFile(pkg.SrcinfoPath(), srcinfo, 0644)
-	if err != nil {
-		return false
-	}
-	return true
+	return os.WriteFile(pkg.SrcinfoPath(), srcinfo, 0644)
 }

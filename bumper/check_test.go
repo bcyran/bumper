@@ -65,11 +65,13 @@ func TestCheckAction_FailNoProvider(t *testing.T) {
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "?", result.String())
+	assert.ErrorContains(t, result.GetError(), "no upstream provider found")
 }
 
 func TestCheckAction_FailProviderFailed(t *testing.T) {
+	expectedErr := "some random error"
 	verProvFactory := func(url string) upstream.VersionProvider {
-		return &fakeVersionProvider{err: fmt.Errorf("err")}
+		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
 	action := NewCheckAction(verProvFactory)
 	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}}
@@ -78,13 +80,15 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "?", result.String())
+	assert.ErrorContains(t, result.GetError(), expectedErr)
 }
 
 func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
+	expectedErr := "some random error"
 	checkedUrls := []string{}
 	verProvFactory := func(url string) upstream.VersionProvider {
 		checkedUrls = append(checkedUrls, url)
-		return &fakeVersionProvider{err: fmt.Errorf("some err")}
+		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
 	action := NewCheckAction(verProvFactory)
 	pkg := pack.Package{
@@ -101,6 +105,7 @@ func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
 	// result assertions
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "?", result.String())
+	assert.ErrorContains(t, result.GetError(), expectedErr)
 }
 
 func TestCheckActionResult_String(t *testing.T) {

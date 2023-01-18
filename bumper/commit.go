@@ -42,6 +42,7 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 	isChanged, err := action.isChanged(pkg)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		return actionResult
 	}
 	if !isChanged {
@@ -49,8 +50,9 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 		return actionResult
 	}
 
-	if result := action.commit(pkg); result == false {
+	if err := action.commit(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		return actionResult
 	}
 
@@ -75,17 +77,13 @@ func (action *CommitAction) isChanged(pkg *pack.Package) (bool, error) {
 	return true, nil
 }
 
-func (action *CommitAction) commit(pkg *pack.Package) bool {
+func (action *CommitAction) commit(pkg *pack.Package) error {
 	_, err := action.commandRunner(pkg.Path, "git", "add", "PKGBUILD", ".SRCINFO")
 	if err != nil {
-		return false
+		return err
 	}
 
 	commitMessage := fmt.Sprintf("Bump version to %s", pkg.UpstreamVersion)
 	_, err = action.commandRunner(pkg.Path, "git", "commit", "--message", commitMessage)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err
 }

@@ -14,6 +14,7 @@ const (
 
 type ActionResult interface {
 	GetStatus() ActionStatus
+	GetError() error
 	String() string
 }
 
@@ -23,8 +24,13 @@ type Action interface {
 
 type BaseActionResult struct {
 	Status ActionStatus
+	Error  error
 }
 
 func (result *BaseActionResult) GetStatus() ActionStatus {
 	return result.Status
+}
+
+func (result *BaseActionResult) GetError() error {
+	return result.Error
 }

@@ -42,14 +42,21 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 	}
 
 	isOnMaster, err := action.isOnMaster(pkg)
-	if err != nil || isOnMaster == false {
+	if err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
+		return actionResult
+	}
+	if isOnMaster == false {
+		actionResult.Status = ACTION_FAILED
+		actionResult.Error = fmt.Errorf("not on master branch")
 		return actionResult
 	}
 
 	isBehindOrigin, err := action.isBehindOrigin(pkg)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		return actionResult
 	}
 	if isBehindOrigin == false {
@@ -57,8 +64,9 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 		return actionResult
 	}
 
-	if result := action.push(pkg); result == false {
+	if err := action.push(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		return actionResult
 	}
 
@@ -93,11 +101,7 @@ func (action *PushAction) isBehindOrigin(pkg *pack.Package) (bool, error) {
 	return true, nil
 }
 
-func (action *PushAction) push(pkg *pack.Package) bool {
+func (action *PushAction) push(pkg *pack.Package) error {
 	_, err := action.commandRunner(pkg.Path, "git", "push")
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err
 }

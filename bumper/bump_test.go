@@ -108,14 +108,16 @@ func TestBumpAction_FailBump(t *testing.T) {
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "bump failed", result.String())
+	assert.ErrorContains(t, result.GetError(), "PKGBUILD: no such file or directory")
 }
 
 func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
 
+	expectedErr := "omg, updpkgsums failed"
 	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte{}, Err: fmt.Errorf("foo bar")}, // retval for updpkgsums
+		{Stdout: []byte{}, Err: fmt.Errorf(expectedErr)}, // retval for updpkgsums
 	}
 	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 
@@ -124,15 +126,17 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "updpkgsums failed", result.String())
+	assert.ErrorContains(t, result.GetError(), expectedErr)
 }
 
 func TestBumpAction_FailMakepkg(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
 	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
 
+	expectedErr := "oh no, poor makepkg error"
 	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte{}, Err: nil},                   // retval for updpkgsums
-		{Stdout: []byte{}, Err: fmt.Errorf("foo bar")}, // retval for makepkg
+		{Stdout: []byte{}, Err: nil},                     // retval for updpkgsums
+		{Stdout: []byte{}, Err: fmt.Errorf(expectedErr)}, // retval for makepkg
 	}
 	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 
@@ -141,4 +145,5 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "makepkg failed", result.String())
+	assert.ErrorContains(t, result.GetError(), expectedErr)
 }

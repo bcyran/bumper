@@ -55,6 +55,7 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	upstreamVersion, err := action.tryGetUpstreamVersion(upstreamUrls)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
+		actionResult.Error = err
 		return actionResult
 	}
 
