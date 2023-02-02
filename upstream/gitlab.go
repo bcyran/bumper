@@ -38,16 +38,21 @@ func (gitLab *gitLabProvider) projectId() string {
 }
 
 func (gitLab *gitLabProvider) LatestVersion() (Version, error) {
-	latestReleaseVersion, err := gitLab.latestReleaseVersion()
-	if err == nil {
+	latestReleaseVersion, releaseErr := gitLab.latestReleaseVersion()
+	if releaseErr == nil {
 		return latestReleaseVersion, nil
 	}
 
-	if !errors.Is(err, ErrVersionNotFound) {
-		return "", err
+	if !errors.Is(releaseErr, ErrVersionNotFound) {
+		return "", releaseErr
 	}
 
-	return gitLab.latestTagVersion()
+	latestTagVersion, tagErr := gitLab.latestTagVersion()
+	if tagErr != nil {
+		return "", errors.Join(releaseErr, tagErr)
+	}
+
+	return latestTagVersion, nil
 }
 
 func (gitLab *gitLabProvider) releasesURL() string {

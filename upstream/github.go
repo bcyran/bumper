@@ -34,16 +34,21 @@ func newGitHubProvider(url string) *gitHubProvider {
 }
 
 func (gitHub *gitHubProvider) LatestVersion() (Version, error) {
-	latestReleaseVersion, err := gitHub.latestReleaseVersion()
-	if err == nil {
+	latestReleaseVersion, releaseErr := gitHub.latestReleaseVersion()
+	if releaseErr == nil {
 		return latestReleaseVersion, nil
 	}
 
-	if !errors.Is(err, ErrVersionNotFound) {
-		return "", err
+	if !errors.Is(releaseErr, ErrVersionNotFound) {
+		return "", releaseErr
 	}
 
-	return gitHub.latestTagVersion()
+	latestTagVersion, tagErr := gitHub.latestTagVersion()
+	if tagErr != nil {
+		return "", errors.Join(releaseErr, tagErr)
+	}
+
+	return latestTagVersion, nil
 }
 
 func (gitHub *gitHubProvider) latestReleaseVersion() (Version, error) {

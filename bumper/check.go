@@ -1,6 +1,7 @@
 package bumper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -84,17 +85,17 @@ func (action *CheckAction) tryGetUpstreamVersion(urls []string) (upstream.Versio
 		return upstream.Version(""), fmt.Errorf("no upstream provider found")
 	}
 
-	var upstreamErr error
+	upstreamErrs := []error{}
 	for _, provider := range providers {
 		upstreamVersion, err := provider.LatestVersion()
 		if err == nil {
 			return upstreamVersion, nil
 		} else {
-			upstreamErr = err
+			upstreamErrs = append(upstreamErrs, fmt.Errorf("upstream provider error: %w", err))
 		}
 	}
 
-	return upstream.Version(""), fmt.Errorf("upstream provider error: %w", upstreamErr)
+	return upstream.Version(""), errors.Join(upstreamErrs...)
 }
 
 // getPackageUrls extracts all relevant URLs from given package.
