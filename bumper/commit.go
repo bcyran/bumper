@@ -9,6 +9,8 @@ import (
 
 const expectedGitStatus = " M .SRCINFO\x00 M PKGBUILD\x00"
 
+var commitError = errors.New("commit action error")
+
 type commitActionResult struct {
 	BaseActionResult
 }
@@ -42,7 +44,7 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 	isChanged, err := action.isChanged(pkg)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w %w", commitError, err)
 		return actionResult
 	}
 	if !isChanged {
@@ -52,7 +54,7 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 
 	if err := action.commit(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w %w", commitError, err)
 		return actionResult
 	}
 

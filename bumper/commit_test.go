@@ -97,4 +97,5 @@ func TestCommitAction_Fail(t *testing.T) {
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "commit failed", result.String())
 	assert.ErrorContains(t, result.GetError(), "unexpected changes in the repository")
+	assert.ErrorContains(t, result.GetError(), "commit action error")
 }

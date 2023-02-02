@@ -90,6 +90,7 @@ func TestPushAction_FailWrongBranch(t *testing.T) {
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "push failed", result.String())
 	assert.ErrorContains(t, result.GetError(), "not on master branch")
+	assert.ErrorContains(t, result.GetError(), "push action error")
 }
 
 func TestPushAction_FailGitError(t *testing.T) {
@@ -112,4 +113,5 @@ func TestPushAction_FailGitError(t *testing.T) {
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "push failed", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
+	assert.ErrorContains(t, result.GetError(), "push action error")
 }

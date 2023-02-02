@@ -87,4 +87,5 @@ func TestBuildAction_Fail(t *testing.T) {
 	}
 	assert.Equal(t, expectedBuildCommand, (*commandRuns)[0])
 	assert.ErrorContains(t, result.GetError(), expectedErr)
+	assert.ErrorContains(t, result.GetError(), "build action error")
 }

@@ -1,6 +1,7 @@
 package bumper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -9,7 +10,10 @@ import (
 
 const masterBranch = "master"
 
-var diffTarget = fmt.Sprintf("%s...origin/%s", masterBranch, masterBranch)
+var (
+	diffTarget = fmt.Sprintf("%s...origin/%s", masterBranch, masterBranch)
+	pushError  = errors.New("push action error")
+)
 
 type pushActionResult struct {
 	BaseActionResult
@@ -44,19 +48,19 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 	isOnMaster, err := action.isOnMaster(pkg)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w %w", pushError, err)
 		return actionResult
 	}
 	if isOnMaster == false {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("not on master branch")
+		actionResult.Error = fmt.Errorf("%w: not on master branch", pushError)
 		return actionResult
 	}
 
 	isBehindOrigin, err := action.isBehindOrigin(pkg)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w %w", pushError, err)
 		return actionResult
 	}
 	if isBehindOrigin == false {
@@ -66,7 +70,7 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 
 	if err := action.push(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w %w", pushError, err)
 		return actionResult
 	}
 

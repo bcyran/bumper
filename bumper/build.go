@@ -1,8 +1,13 @@
 package bumper
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/bcyran/bumper/pack"
 )
+
+var buildError = errors.New("build action error")
 
 type buildActionResult struct {
 	BaseActionResult
@@ -37,7 +42,7 @@ func (action *BuildAction) Execute(pkg *pack.Package) ActionResult {
 	_, err := action.commandRunner(pkg.Path, "makepkg", "--force", "--clean")
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w: %w", buildError, err)
 	} else {
 		actionResult.Status = ACTION_SUCCESS
 	}

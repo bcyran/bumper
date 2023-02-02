@@ -1,6 +1,8 @@
 package bumper
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -10,7 +12,10 @@ import (
 
 const newPkgrel = "pkgrel=1"
 
-var pkgrelPattern = regexp.MustCompile(`pkgrel=\d`)
+var (
+	pkgrelPattern = regexp.MustCompile(`pkgrel=\d`)
+	bumpError     = errors.New("bump action error")
+)
 
 type bumpActionResult struct {
 	BaseActionResult
@@ -53,7 +58,7 @@ func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 
 	if err := action.bump(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w: %w", bumpError, err)
 		actionResult.bumpOk = false
 		return actionResult
 	} else {
@@ -62,7 +67,7 @@ func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 
 	if err := action.updpkgsums(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w: %w", bumpError, err)
 		actionResult.updpkgsumsOk = false
 		return actionResult
 	} else {
@@ -71,7 +76,7 @@ func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 
 	if err := action.makepkg(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = err
+		actionResult.Error = fmt.Errorf("%w: %w", bumpError, err)
 		actionResult.makepkgOk = false
 		return actionResult
 	} else {
@@ -86,7 +91,7 @@ func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 func (action *BumpAction) bump(pkg *pack.Package) error {
 	pkgbuild, err := os.ReadFile(pkg.PkgbuildPath())
 	if err != nil {
-		return err
+		return fmt.Errorf("PKGBUILD reading error: %w", err)
 	}
 	updatedPkgbuild := strings.ReplaceAll(
 		string(pkgbuild), pkg.Pkgver.GetVersionStr(), pkg.UpstreamVersion.GetVersionStr(),
@@ -96,7 +101,7 @@ func (action *BumpAction) bump(pkg *pack.Package) error {
 	}
 	err = os.WriteFile(pkg.PkgbuildPath(), []byte(updatedPkgbuild), 0644)
 	if err != nil {
-		return err
+		return fmt.Errorf("PKGBUILD writing error: %w", err)
 	}
 	return nil
 }
@@ -111,5 +116,9 @@ func (action *BumpAction) makepkg(pkg *pack.Package) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(pkg.SrcinfoPath(), srcinfo, 0644)
+	err = os.WriteFile(pkg.SrcinfoPath(), srcinfo, 0644)
+	if err != nil {
+		return fmt.Errorf(".SRCINFO writing error: %w", err)
+	}
+	return nil
 }

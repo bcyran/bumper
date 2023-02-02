@@ -11,7 +11,10 @@ import (
 	"github.com/fatih/color"
 )
 
-const updateIntervalMs = 100
+const (
+	updateIntervalMs = 100
+	lineSep          = "\n"
+)
 
 var (
 	spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
@@ -86,9 +89,11 @@ func (pkgDisplay *PackageDisplay) String() string {
 			resultsStrings = append(resultsStrings, result.String())
 		}
 	}
+	var pkgError error
 	if pkgDisplay.finished == true {
 		if pkgDisplay.failed == true {
 			bullet = failureColor("✗")
+			pkgError = pkgDisplay.actionResults[len(pkgDisplay.actionResults)-1].GetError()
 		} else if pkgDisplay.skipped == true {
 			bullet = skippedColor("∅")
 		} else {
@@ -100,7 +105,17 @@ func (pkgDisplay *PackageDisplay) String() string {
 	}
 	pkgDisplay.mtx.RUnlock()
 
-	return fmt.Sprintf("%s %s: %s", bullet, pkgDisplay.name, strings.Join(resultsStrings, ", "))
+	pkgString := fmt.Sprintf("%s %s: %s", bullet, pkgDisplay.name, strings.Join(resultsStrings, ", "))
+	if pkgError != nil {
+		errLines := strings.Split(pkgError.Error(), lineSep)
+		formattedErrLines := []string{}
+		formattedErrLines = append(formattedErrLines, "  ⤷ "+errLines[0])
+		for _, line := range errLines[1:] {
+			formattedErrLines = append(formattedErrLines, "    "+line)
+		}
+		pkgString += failureColor(lineSep + strings.Join(formattedErrLines, lineSep))
+	}
+	return pkgString
 }
 
 type PackageListDisplay struct {

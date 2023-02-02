@@ -1,7 +1,10 @@
 package bumper
 
 import (
+	"bytes"
+	"fmt"
 	"os/exec"
+	"strings"
 )
 
 type CommandRunner = func(cwd string, command string, args ...string) ([]byte, error)
@@ -9,9 +12,14 @@ type CommandRunner = func(cwd string, command string, args ...string) ([]byte, e
 func ExecCommand(cwd string, command string, args ...string) ([]byte, error) {
 	cmd := exec.Command(command, args...)
 	cmd.Dir = cwd
-	stdout, err := cmd.Output()
+	stdoutBuf := bytes.Buffer{}
+	stderrBuf := strings.Builder{}
+	cmd.Stdout = &stdoutBuf
+	cmd.Stderr = &stderrBuf
+
+	err := cmd.Run()
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, fmt.Errorf("%s %s error (%w): %s", command, strings.Join(args, " "), err, stderrBuf.String())
 	}
-	return stdout, nil
+	return stdoutBuf.Bytes(), nil
 }

@@ -109,6 +109,7 @@ func TestBumpAction_FailBump(t *testing.T) {
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "bump failed", result.String())
 	assert.ErrorContains(t, result.GetError(), "PKGBUILD: no such file or directory")
+	assert.ErrorContains(t, result.GetError(), "bump action error")
 }
 
 func TestBumpAction_FailUpdpkgsums(t *testing.T) {
@@ -127,6 +128,7 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "updpkgsums failed", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
+	assert.ErrorContains(t, result.GetError(), "bump action error")
 }
 
 func TestBumpAction_FailMakepkg(t *testing.T) {
@@ -146,4 +148,5 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 	assert.Equal(t, ACTION_FAILED, result.GetStatus())
 	assert.Equal(t, "makepkg failed", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
+	assert.ErrorContains(t, result.GetError(), "bump action error")
 }
