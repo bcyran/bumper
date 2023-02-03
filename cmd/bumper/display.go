@@ -107,15 +107,22 @@ func (pkgDisplay *PackageDisplay) String() string {
 
 	pkgString := fmt.Sprintf("%s %s: %s", bullet, pkgDisplay.name, strings.Join(resultsStrings, ", "))
 	if pkgError != nil {
-		errLines := strings.Split(pkgError.Error(), lineSep)
-		formattedErrLines := []string{}
-		formattedErrLines = append(formattedErrLines, "  ⤷ "+errLines[0])
-		for _, line := range errLines[1:] {
-			formattedErrLines = append(formattedErrLines, "    "+line)
-		}
-		pkgString += failureColor(lineSep + strings.Join(formattedErrLines, lineSep))
+		pkgString += failureColor(prependBracket(pkgError.Error()))
 	}
 	return pkgString
+}
+
+// prependBracket prepends given string with unicode "bracket" drawing, like this:
+// │ some text
+// └ more text
+func prependBracket(text string) string {
+	lines := strings.Split(text, lineSep)
+	formattedLines := []string{}
+	for _, line := range lines[:len(lines)-1] {
+		formattedLines = append(formattedLines, "│ "+line)
+	}
+	formattedLines = append(formattedLines, "└ "+lines[len(lines)-1])
+	return lineSep + strings.Join(formattedLines, lineSep)
 }
 
 type PackageListDisplay struct {
