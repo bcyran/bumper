@@ -20,12 +20,15 @@ type DoActions struct {
 	push   bool
 }
 
-var doActions = DoActions{
-	bump:   true,
-	make:   true,
-	commit: true,
-	push:   false,
-}
+var (
+	doActions = DoActions{
+		bump:   true,
+		make:   true,
+		commit: true,
+		push:   false,
+	}
+	collectDepth = 1
+)
 
 var bumperCmd = &cobra.Command{
 	Use:   "bumper [dir]",
@@ -41,7 +44,15 @@ For each package with update available it can perform the following actions:
   * commit: commit the changes
   * push: push committed changes
 
-Actions can be selected using CLI flags. By default push action is disabled.`,
+Actions can be selected using CLI flags. By default push action is disabled.
+
+Packages are searched recursively starting in the given dir (current working
+directory by default if no dir is given). Default recursion depth is 1 which
+enables you to run bumper in a dir containing multiple package dirs.`,
+	Example: `  bumper                                find and bump packages in $PWD
+  bumper --bump=false                   find packages, check updates in $PWD
+  bumper ~/workspace/aur                find and bump packages in given dir
+  bumper ~/workspace/aur/my-package     bump single package`,
 	Version: "0.1.0",
 	Run: func(cmd *cobra.Command, args []string) {
 		var workDir string
@@ -72,6 +83,7 @@ func init() {
 	bumperCmd.Flags().BoolVarP(&doActions.make, "make", "m", true, "make (build) bumped packages")
 	bumperCmd.Flags().BoolVarP(&doActions.commit, "commit", "c", true, "commit changes")
 	bumperCmd.Flags().BoolVarP(&doActions.push, "push", "p", false, "push commited changes")
+	bumperCmd.Flags().IntVarP(&collectDepth, "depth", "d", 1, "depth of dir recursion in search for packages")
 }
 
 func createActions(doActions DoActions) []bumper.Action {
@@ -103,7 +115,7 @@ func createActions(doActions DoActions) []bumper.Action {
 }
 
 func runBumper(workDir string, actions []bumper.Action) {
-	packages, err := bumper.CollectPackages(workDir, 1)
+	packages, err := bumper.CollectPackages(workDir, collectDepth)
 	if err != nil {
 		fmt.Printf("Fatal error, could not collect packages: %v.\n", err)
 		os.Exit(1)
