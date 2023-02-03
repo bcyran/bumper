@@ -77,7 +77,7 @@ func (gitLab *gitLabProvider) releasesURL() string {
 
 func (gitLab *gitLabProvider) latestReleaseVersion() (Version, error) {
 	var latestReleases []gitLabReleaseResp
-	if err := httpGetJSON(gitLab.releasesURL(), &latestReleases); err != nil {
+	if err := httpGetJSON(gitLab.releasesURL(), &latestReleases, nil); err != nil {
 		return "", err
 	}
 
@@ -102,7 +102,7 @@ func (gitLab *gitLabProvider) tagsURL() string {
 
 func (gitLab *gitLabProvider) latestTagVersion() (Version, error) {
 	var latestTags []gitLabTagResp
-	if err := httpGetJSON(gitLab.tagsURL(), &latestTags); err != nil {
+	if err := httpGetJSON(gitLab.tagsURL(), &latestTags, nil); err != nil {
 		return "", err
 	}
 

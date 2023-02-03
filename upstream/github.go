@@ -62,7 +62,7 @@ func (gitHub *gitHubProvider) LatestVersion() (Version, error) {
 
 func (gitHub *gitHubProvider) latestReleaseVersion() (Version, error) {
 	var latestReleases []gitHubReleaseResp
-	if err := httpGetJSON(gitHub.releasesURL(), &latestReleases); err != nil {
+	if err := httpGetJSON(gitHub.releasesURL(), &latestReleases, nil); err != nil {
 		return "", err
 	}
 
@@ -87,7 +87,7 @@ func (gitHub *gitHubProvider) releasesURL() string {
 
 func (gitHub *gitHubProvider) latestTagVersion() (Version, error) {
 	var latestTags []gitHubTagResp
-	if err := httpGetJSON(gitHub.tagsURL(), &latestTags); err != nil {
+	if err := httpGetJSON(gitHub.tagsURL(), &latestTags, nil); err != nil {
 		return "", err
 	}
 

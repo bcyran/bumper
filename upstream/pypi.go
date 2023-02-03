@@ -42,7 +42,7 @@ func (pypi *pypiProvider) Equal(other interface{}) bool {
 
 func (pypi *pypiProvider) LatestVersion() (Version, error) {
 	var packageInfo pypiPackageResp
-	if err := httpGetJSON(pypi.packageInfoURL(), &packageInfo); err != nil {
+	if err := httpGetJSON(pypi.packageInfoURL(), &packageInfo, nil); err != nil {
 		return "", err
 	}
 	if version, isValid := parseVersion(packageInfo.Info.Version); isValid == true {
