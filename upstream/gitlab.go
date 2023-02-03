@@ -33,10 +33,10 @@ func newGitLabProvider(url string) *gitLabProvider {
 	return &gitLabProvider{match[1], match[2]}
 }
 
-func (gitHub *gitLabProvider) Equal(other interface{}) bool {
+func (gitLab *gitLabProvider) Equal(other interface{}) bool {
 	switch other := other.(type) {
-	case *gitHubProvider:
-		return gitHub.owner == other.owner && gitHub.repo == other.repo
+	case *gitLabProvider:
+		return gitLab.owner == other.owner && gitLab.repo == other.repo
 	default:
 		return false
 	}
