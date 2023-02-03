@@ -9,6 +9,9 @@ type VersionProvider interface {
 // NewVersionProvider tries to create a VersionProvider instance for a given URL.
 // Returns nil if there's no suitable provider.
 func NewVersionProvider(url string) VersionProvider {
+	if pypiProvider := newPypiProvider(url); pypiProvider != nil {
+		return pypiProvider
+	}
 	if gitHubProvider := newGitHubProvider(url); gitHubProvider != nil {
 		return gitHubProvider
 	}
