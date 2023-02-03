@@ -72,12 +72,29 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	return actionResult
 }
 
+// getPackageUrls extracts all relevant URLs from given package.
+// This includes both 'url' field and 'source' fields.
+func getPackageUrls(pkg *pack.Package) []string {
+	var urls = []string{pkg.Url}
+
+	for _, sourceEntry := range pkg.Source {
+		// source entry might be in the form 'file.bar::https://path/to/file.bar'
+		_, sourceUrl, separatorFound := strings.Cut(sourceEntry, sourceSeparator)
+		if !separatorFound {
+			sourceUrl = sourceEntry
+		}
+		urls = append(urls, sourceUrl)
+	}
+
+	return urls
+}
+
 // tryGetUpstreamVersion tries to create and use a version provider for each of the given URLs.
 func (action *CheckAction) tryGetUpstreamVersion(urls []string) (upstream.Version, error) {
 	providers := []upstream.VersionProvider{}
 	for _, url := range urls {
-		if provider := action.versionProviderFactory(url); provider != nil {
-			providers = append(providers, provider)
+		if newProvider := action.versionProviderFactory(url); newProvider != nil {
+			providers = appendUnique(providers, newProvider)
 		}
 	}
 
@@ -98,19 +115,15 @@ func (action *CheckAction) tryGetUpstreamVersion(urls []string) (upstream.Versio
 	return upstream.Version(""), errors.Join(upstreamErrs...)
 }
 
-// getPackageUrls extracts all relevant URLs from given package.
-// This includes both 'url' field and 'source' fields.
-func getPackageUrls(pkg *pack.Package) []string {
-	var urls = []string{pkg.Url}
-
-	for _, sourceEntry := range pkg.Source {
-		// source entry might be in the form 'file.bar::https://path/to/file.bar'
-		_, sourceUrl, separatorFound := strings.Cut(sourceEntry, sourceSeparator)
-		if !separatorFound {
-			sourceUrl = sourceEntry
+func appendUnique(providers []upstream.VersionProvider, newProvider upstream.VersionProvider) []upstream.VersionProvider {
+	isUnique := true
+	for _, existingProvider := range providers {
+		if newProvider.Equal(existingProvider) {
+			isUnique = false
 		}
-		urls = append(urls, sourceUrl)
 	}
-
-	return urls
+	if isUnique {
+		providers = append(providers, newProvider)
+	}
+	return providers
 }

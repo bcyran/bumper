@@ -3,6 +3,7 @@ package upstream
 // VersionProvider tries to find the latest software version based on its source URL.
 type VersionProvider interface {
 	LatestVersion() (Version, error)
+	Equal(other interface{}) bool
 }
 
 // NewVersionProvider tries to create a VersionProvider instance for a given URL.

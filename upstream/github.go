@@ -33,6 +33,15 @@ func newGitHubProvider(url string) *gitHubProvider {
 	return &gitHubProvider{match[1], match[2]}
 }
 
+func (gitHub *gitHubProvider) Equal(other interface{}) bool {
+	switch other := other.(type) {
+	case *gitHubProvider:
+		return gitHub.owner == other.owner && gitHub.repo == other.repo
+	default:
+		return false
+	}
+}
+
 func (gitHub *gitHubProvider) LatestVersion() (Version, error) {
 	latestReleaseVersion, releaseErr := gitHub.latestReleaseVersion()
 	if releaseErr == nil {

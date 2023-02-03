@@ -33,6 +33,15 @@ func newGitLabProvider(url string) *gitLabProvider {
 	return &gitLabProvider{match[1], match[2]}
 }
 
+func (gitHub *gitLabProvider) Equal(other interface{}) bool {
+	switch other := other.(type) {
+	case *gitHubProvider:
+		return gitHub.owner == other.owner && gitHub.repo == other.repo
+	default:
+		return false
+	}
+}
+
 func (gitLab *gitLabProvider) projectId() string {
 	return url.PathEscape(fmt.Sprintf("%s/%s", gitLab.owner, gitLab.repo))
 }

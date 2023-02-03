@@ -21,6 +21,10 @@ func (provider *fakeVersionProvider) LatestVersion() (upstream.Version, error) {
 	return upstream.Version(provider.version), nil
 }
 
+func (provider *fakeVersionProvider) Equal(other interface{}) bool {
+	return false
+}
+
 func TestCheckAction_Success(t *testing.T) {
 	verProvFactory := func(url string) upstream.VersionProvider {
 		return &fakeVersionProvider{version: "2.0.0"}
