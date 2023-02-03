@@ -7,6 +7,7 @@ import (
 
 	"github.com/bcyran/bumper/pack"
 	"github.com/bcyran/bumper/upstream"
+	"go.uber.org/config"
 )
 
 const sourceSeparator = "::"
@@ -34,14 +35,15 @@ func (result *checkActionResult) String() string {
 	}
 }
 
-type versionProviderFactory func(string) upstream.VersionProvider
+type versionProviderFactory func(string, config.Value) upstream.VersionProvider
 
 type CheckAction struct {
 	versionProviderFactory versionProviderFactory
+	checkConfig            config.Value
 }
 
-func NewCheckAction(versionProviderFactory versionProviderFactory) *CheckAction {
-	return &CheckAction{versionProviderFactory: versionProviderFactory}
+func NewCheckAction(versionProviderFactory versionProviderFactory, checkConfig config.Value) *CheckAction {
+	return &CheckAction{versionProviderFactory: versionProviderFactory, checkConfig: checkConfig}
 }
 
 func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
@@ -91,9 +93,10 @@ func getPackageUrls(pkg *pack.Package) []string {
 
 // tryGetUpstreamVersion tries to create and use a version provider for each of the given URLs.
 func (action *CheckAction) tryGetUpstreamVersion(urls []string) (upstream.Version, error) {
+	providersConfig := action.checkConfig.Get("providers")
 	providers := []upstream.VersionProvider{}
 	for _, url := range urls {
-		if newProvider := action.versionProviderFactory(url); newProvider != nil {
+		if newProvider := action.versionProviderFactory(url, providersConfig); newProvider != nil {
 			providers = appendUnique(providers, newProvider)
 		}
 	}

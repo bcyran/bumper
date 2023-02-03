@@ -11,6 +11,7 @@ import (
 	"github.com/gosuri/uilive"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
+	"go.uber.org/config"
 )
 
 type DoActions struct {
@@ -72,7 +73,16 @@ enables you to run bumper in a dir containing multiple package dirs.`,
 			os.Exit(1)
 		}
 
-		actions := createActions(doActions)
+		bumperConfig, err := bumper.ReadConfig()
+		if err != nil {
+			fmt.Printf("Fatal error, invalid config: %v.\n", err)
+			os.Exit(1)
+		}
+		if bumperConfig == nil {
+			bumperConfig = config.NopProvider{}
+		}
+
+		actions := createActions(doActions, bumperConfig)
 		runBumper(workDir, actions)
 
 	},
@@ -86,9 +96,9 @@ func init() {
 	bumperCmd.Flags().IntVarP(&collectDepth, "depth", "d", 1, "depth of dir recursion in search for packages")
 }
 
-func createActions(doActions DoActions) []bumper.Action {
+func createActions(doActions DoActions, bumperConfig config.Provider) []bumper.Action {
 	actions := []bumper.Action{
-		bumper.NewCheckAction(upstream.NewVersionProvider),
+		bumper.NewCheckAction(upstream.NewVersionProvider, bumperConfig.Get("check")),
 	}
 
 	if doActions.bump == true {
