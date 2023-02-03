@@ -9,10 +9,31 @@ import (
 
 func TestNewGitLab_Valid(t *testing.T) {
 	cases := map[string]gitLabProvider{
-		"https://gitlab.com/bcyran/timewall":             {owner: "bcyran", repo: "timewall"},
-		"https://gitlab.com/bcyran/timewall/-/foo":       {owner: "bcyran", repo: "timewall"},
-		"https://gitlab.com/bcyran/group/timewall":       {owner: "bcyran", repo: "group/timewall"},
-		"https://gitlab.com/bcyran/group/timewall/-/foo": {owner: "bcyran", repo: "group/timewall"},
+		"https://gitlab.com/bcyran/timewall": {
+			netloc: "gitlab.com",
+			owner:  "bcyran",
+			repo:   "timewall",
+		},
+		"https://gitlab.com/bcyran/timewall/-/foo": {
+			netloc: "gitlab.com",
+			owner:  "bcyran",
+			repo:   "timewall",
+		},
+		"https://gitlab.com/bcyran/group/timewall": {
+			netloc: "gitlab.com",
+			owner:  "bcyran",
+			repo:   "group/timewall",
+		},
+		"https://gitlab.com/bcyran/group/timewall/-/foo": {
+			netloc: "gitlab.com",
+			owner:  "bcyran",
+			repo:   "group/timewall",
+		},
+		"https://mygit.bar.com/me/project": {
+			netloc: "mygit.bar.com",
+			owner:  "me",
+			repo:   "project",
+		},
 	}
 
 	for validUrl, expectedResult := range cases {
@@ -22,16 +43,20 @@ func TestNewGitLab_Valid(t *testing.T) {
 }
 
 func TestNewGitLab_Invalid(t *testing.T) {
-	invalidUrl := "https://gitlab.com/whatever"
+	invalidUrls := []string{
+		"https://gitlab.com/whatever",
+		"https://foo.com/user/project",
+	}
 
-	result := newGitLabProvider(invalidUrl)
-
-	assert.Nil(t, result)
+	for _, invalidUrl := range invalidUrls {
+		result := newGitLabProvider(invalidUrl)
+		assert.Nil(t, result)
+	}
 }
 
 func TestGitLabLatestVersion_Release(t *testing.T) {
 	defer gock.Off()
-	gock.New("https://gitlab.com").
+	gock.New("https://gitlab.something.com").
 		Get("/api/v4/projects/foo/bar/releases").
 		Reply(200).
 		JSON([]map[string]interface{}{
@@ -51,7 +76,7 @@ func TestGitLabLatestVersion_Release(t *testing.T) {
 				"upcoming_release": false,
 			},
 		})
-	gitLab := gitLabProvider{owner: "foo", repo: "bar"}
+	gitLab := gitLabProvider{netloc: "gitlab.something.com", owner: "foo", repo: "bar"}
 
 	result, err := gitLab.LatestVersion()
 
@@ -74,7 +99,7 @@ func TestGitLabLatestVersion_Tag(t *testing.T) {
 			{"name": "4.1.0"},
 		})
 
-	gitLab := gitLabProvider{owner: "foo", repo: "bar"}
+	gitLab := gitLabProvider{netloc: "gitlab.com", owner: "foo", repo: "bar"}
 
 	result, err := gitLab.LatestVersion()
 
@@ -93,7 +118,7 @@ func TestGitLabLatestVersion_NoVersions(t *testing.T) {
 		Reply(200).
 		JSON([]interface{}{})
 
-	gitLab := gitLabProvider{owner: "foo", repo: "bar"}
+	gitLab := gitLabProvider{netloc: "gitlab.com", owner: "foo", repo: "bar"}
 
 	_, err := gitLab.LatestVersion()
 
@@ -111,7 +136,7 @@ func TestGitLabLatestVersion_4xx(t *testing.T) {
 		Reply(401).
 		JSON([]interface{}{})
 
-	gitLab := gitLabProvider{owner: "foo", repo: "bar"}
+	gitLab := gitLabProvider{netloc: "gitlab.com", owner: "foo", repo: "bar"}
 
 	_, err := gitLab.LatestVersion()
 
@@ -129,7 +154,7 @@ func TestGitLabLatestVersion_5xx(t *testing.T) {
 		Reply(501).
 		JSON([]interface{}{})
 
-	gitLab := gitLabProvider{owner: "foo", repo: "bar"}
+	gitLab := gitLabProvider{netloc: "gitlab.com", owner: "foo", repo: "bar"}
 
 	_, err := gitLab.LatestVersion()
 

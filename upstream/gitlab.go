@@ -7,12 +7,15 @@ import (
 	"regexp"
 )
 
-var gitLabUrlRegex = regexp.MustCompile(`gitlab\.com/([^/#?]+)/([^#?]+?)(/\-/.*)?$`)
+// Match any URL which *could* be a GitLab URL and contains 'git' in netloc.
+// This is to try and handle instances other than gitlab.com, e.g.: foogit.bar.com.
+var gitLabUrlRegex = regexp.MustCompile(`([^/#?]*git[^/#?]*)/([^/#?]+)/([^#?]+?)(/\-/.*)?$`)
 
 // gitLabProvider tries to find the latest version both in releases and tags of a gitLab repo.
 type gitLabProvider struct {
-	owner string
-	repo  string
+	netloc string
+	owner  string
+	repo   string
 }
 
 type gitLabReleaseResp struct {
@@ -30,7 +33,7 @@ func newGitLabProvider(url string) *gitLabProvider {
 	if len(match) == 0 {
 		return nil
 	}
-	return &gitLabProvider{match[1], match[2]}
+	return &gitLabProvider{match[1], match[2], match[3]}
 }
 
 func (gitLab *gitLabProvider) Equal(other interface{}) bool {
@@ -44,6 +47,10 @@ func (gitLab *gitLabProvider) Equal(other interface{}) bool {
 
 func (gitLab *gitLabProvider) projectId() string {
 	return url.PathEscape(fmt.Sprintf("%s/%s", gitLab.owner, gitLab.repo))
+}
+
+func (gitLab *gitLabProvider) apiURL() string {
+	return fmt.Sprintf("https://%s/api/v4", gitLab.netloc)
 }
 
 func (gitLab *gitLabProvider) LatestVersion() (Version, error) {
@@ -65,7 +72,7 @@ func (gitLab *gitLabProvider) LatestVersion() (Version, error) {
 }
 
 func (gitLab *gitLabProvider) releasesURL() string {
-	return fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/releases", gitLab.projectId())
+	return fmt.Sprintf("%s/projects/%s/releases", gitLab.apiURL(), gitLab.projectId())
 }
 
 func (gitLab *gitLabProvider) latestReleaseVersion() (Version, error) {
@@ -90,7 +97,7 @@ func (gitLab *gitLabProvider) latestReleaseVersion() (Version, error) {
 }
 
 func (gitLab *gitLabProvider) tagsURL() string {
-	return fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/repository/tags", gitLab.projectId())
+	return fmt.Sprintf("%s/projects/%s/repository/tags", gitLab.apiURL(), gitLab.projectId())
 }
 
 func (gitLab *gitLabProvider) latestTagVersion() (Version, error) {
