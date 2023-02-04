@@ -48,7 +48,7 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 	isOnMaster, err := action.isOnMaster(pkg)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w %w", pushError, err)
+		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
 		return actionResult
 	}
 	if isOnMaster == false {
@@ -60,7 +60,7 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 	isBehindOrigin, err := action.isBehindOrigin(pkg)
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w %w", pushError, err)
+		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
 		return actionResult
 	}
 	if isBehindOrigin == false {
@@ -70,7 +70,7 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 
 	if err := action.push(pkg); err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w %w", pushError, err)
+		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
 		return actionResult
 	}
 
