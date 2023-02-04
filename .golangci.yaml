@@ -1,0 +1,19 @@
+run:
+  tests: false
+  skip-dirs:
+    - internal/testutils
+
+linters:
+  enable:
+    - errname
+    - gofmt
+    - gofumpt
+    - goimports
+    - misspell
+    - nilerr
+    - predeclared
+    - revive
+    - thelper
+    - unconvert
+    - unparam
+    - whitespace
