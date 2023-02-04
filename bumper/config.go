@@ -29,7 +29,7 @@ func ReadConfig() (config.Provider, error) {
 		return nil, nil
 	}
 
-	return config.NewYAMLProviderFromFiles(configPath)
+	return config.NewYAML(config.File(configPath))
 }
 
 func getConfigPath() (string, error) {
