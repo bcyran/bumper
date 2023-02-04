@@ -5,6 +5,8 @@
 
 Helper for AUR package maintainers to easily bump `$pkgver` in their packages.
 
+![bumper demo gif](./demo.gif)
+
 ## TL;DR
 Imagine you have all your maintained AUR packages in a single directory.
 Running `bumper` in this dir will find the packages in subdirectories and perform the following actions for each of them:
