@@ -38,7 +38,7 @@ type Srcinfo struct {
 func ParseSrcinfo(path string) (*Srcinfo, error) {
 	rawInfo, err := rawParseSrcinfo(path)
 	if err != nil {
-		return &Srcinfo{}, nil
+		return &Srcinfo{}, err
 	}
 
 	for _, fieldName := range requiredFields {

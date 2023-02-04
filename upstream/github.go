@@ -33,11 +33,9 @@ func newGitHubProvider(url string, gitHubConfig config.Value) *gitHubProvider {
 	if len(match) == 0 {
 		return nil
 	}
-	provider := gitHubProvider{owner: match[1], repo: match[2]}
 
-	if apiKey := gitHubConfig.Get("apiKey"); apiKey.HasValue() {
-		apiKey.Populate(&provider.apiKey)
-	}
+	provider := gitHubProvider{owner: match[1], repo: match[2]}
+	gitHubConfig.Get("apiKey").Populate(&provider.apiKey) //nolint:errcheck
 
 	return &provider
 }

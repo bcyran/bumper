@@ -36,15 +36,13 @@ func newGitLabProvider(url string, gitLabConfig config.Value) *gitLabProvider {
 	if len(match) == 0 {
 		return nil
 	}
-	provider := gitLabProvider{netloc: match[1], owner: match[2], repo: match[3]}
 
-	if apiKeys := gitLabConfig.Get("apiKeys"); apiKeys.HasValue() {
-		// config.Value.Get(path string) doesn't work when path contains dots, like URLs
-		apiKeysMap := map[string]string{}
-		apiKeys.Populate(&apiKeysMap)
-		if apiKey, apiKeyPresent := apiKeysMap[provider.netloc]; apiKeyPresent {
-			provider.apiKey = apiKey
-		}
+	provider := gitLabProvider{netloc: match[1], owner: match[2], repo: match[3]}
+	// config.Value.Get(path string) doesn't work when path contains dots, like URLs
+	apiKeysMap := map[string]string{}
+	gitLabConfig.Get("apiKeys").Populate(&apiKeysMap) //nolint:errcheck
+	if apiKey, apiKeyPresent := apiKeysMap[provider.netloc]; apiKeyPresent {
+		provider.apiKey = apiKey
 	}
 
 	return &provider

@@ -3,7 +3,6 @@ package pack
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -100,7 +99,7 @@ func makePackage(path string) (*Package, error) {
 
 // isVCS checks if package is a VCS package (PKGBUILD contains 'pkgver()').
 func isVCS(pkgbuildPath string) (bool, error) {
-	pkgBuildBytes, err := ioutil.ReadFile(pkgbuildPath)
+	pkgBuildBytes, err := os.ReadFile(pkgbuildPath)
 	if err != nil {
 		return false, err
 	}

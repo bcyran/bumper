@@ -89,7 +89,7 @@ func init() {
 	bumperCmd.Flags().BoolVarP(&doActions.bump, "bump", "b", true, "bump outdated packages")
 	bumperCmd.Flags().BoolVarP(&doActions.make, "make", "m", true, "build bumped packages")
 	bumperCmd.Flags().BoolVarP(&doActions.commit, "commit", "c", true, "commit changes")
-	bumperCmd.Flags().BoolVarP(&doActions.push, "push", "p", false, "push commited changes")
+	bumperCmd.Flags().BoolVarP(&doActions.push, "push", "p", false, "push committed changes")
 	bumperCmd.Flags().IntVarP(&collectDepth, "depth", "d", 1, "depth of dir recursion in search for packages")
 	bumperCmd.Flags().StringVarP(&configPath, "config", "", "", "path to configuration file")
 }

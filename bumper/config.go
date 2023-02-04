@@ -37,7 +37,7 @@ func ReadConfig(requestedPath string) (config.Provider, error) {
 			return nil, err
 		}
 		if _, err := os.Stat(defaultPath); err != nil {
-			return config.NopProvider{}, nil
+			return config.NopProvider{}, nil //nolint:nilerr
 		}
 		configPath = defaultPath
 	}
