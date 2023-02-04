@@ -2,6 +2,7 @@ package bumper
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -14,17 +15,31 @@ const (
 )
 
 var (
-	UnknownConfigPath = errors.New("could not determine config file path")
+	ErrInvalidConfigPath = errors.New("invalid configuration path")
+	ErrUnknownConfigPath = errors.New("could not determine config file path")
 )
 
-func ReadConfig() (config.Provider, error) {
-	configPath, err := getConfigPath()
-	if err != nil {
-		return nil, err
-	}
+// ReadConfig reads config at the given path, or at the default location
+// if the path is empty.
+func ReadConfig(requestedPath string) (config.Provider, error) {
+	var configPath string
 
-	if _, err := os.Stat(configPath); err != nil {
-		return nil, nil
+	if requestedPath != "" {
+		// If config at specific path is requested, the path has to be valid
+		if _, err := os.Stat(requestedPath); err != nil {
+			return nil, fmt.Errorf("%w: %w", ErrInvalidConfigPath, err)
+		}
+		configPath = requestedPath
+	} else {
+		// If we are falling back to the default path, it doesn't have to exist
+		defaultPath, err := getConfigPath()
+		if err != nil {
+			return nil, err
+		}
+		if _, err := os.Stat(defaultPath); err != nil {
+			return config.NopProvider{}, nil
+		}
+		configPath = defaultPath
 	}
 
 	return config.NewYAML(config.File(configPath))
@@ -39,5 +54,5 @@ func getConfigPath() (string, error) {
 	if userHomeSet {
 		return filepath.Join(userHome, defaultConfigDir, relConfigPath), nil
 	}
-	return "", UnknownConfigPath
+	return "", ErrUnknownConfigPath
 }

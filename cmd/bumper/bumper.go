@@ -29,6 +29,7 @@ var (
 		push:   false,
 	}
 	collectDepth = 1
+	configPath   = ""
 )
 
 var bumperCmd = &cobra.Command{
@@ -73,13 +74,10 @@ enables you to run bumper in a dir containing multiple package dirs.`,
 			os.Exit(1)
 		}
 
-		bumperConfig, err := bumper.ReadConfig()
+		bumperConfig, err := bumper.ReadConfig(configPath)
 		if err != nil {
 			fmt.Printf("Fatal error, invalid config: %v.\n", err)
 			os.Exit(1)
-		}
-		if bumperConfig == nil {
-			bumperConfig = config.NopProvider{}
 		}
 
 		actions := createActions(doActions, bumperConfig)
@@ -94,6 +92,7 @@ func init() {
 	bumperCmd.Flags().BoolVarP(&doActions.commit, "commit", "c", true, "commit changes")
 	bumperCmd.Flags().BoolVarP(&doActions.push, "push", "p", false, "push commited changes")
 	bumperCmd.Flags().IntVarP(&collectDepth, "depth", "d", 1, "depth of dir recursion in search for packages")
+	bumperCmd.Flags().StringVarP(&configPath, "config", "", "", "path to configuration file")
 }
 
 func createActions(doActions DoActions, bumperConfig config.Provider) []bumper.Action {
