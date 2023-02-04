@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBuildAction_Success(t *testing.T) {
+func TestMakeAction_Success(t *testing.T) {
 	// our Package struct
 	pkgPath := "/foo/bar/baz"
 	pkg := &pack.Package{
@@ -24,7 +24,7 @@ func TestBuildAction_Success(t *testing.T) {
 	fakeCommandRunner, commandRuns := testutils.MakeFakeCommandRunner(&commandRetvals)
 
 	// execute the action with our mocked command runner
-	action := NewBuildAction(fakeCommandRunner)
+	action := NewMakeAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
 	// result assertions
@@ -37,7 +37,7 @@ func TestBuildAction_Success(t *testing.T) {
 	assert.Equal(t, expectedBuildCommand, (*commandRuns)[0])
 }
 
-func TestBuildAction_Skip(t *testing.T) {
+func TestMakeAction_Skip(t *testing.T) {
 	// our Package struct
 	pkg := &pack.Package{
 		Path:       "/foo/bar/baz",
@@ -49,7 +49,7 @@ func TestBuildAction_Skip(t *testing.T) {
 	fakeCommandRunner, commandRuns := testutils.MakeFakeCommandRunner(&commandRetvals)
 
 	// execute the action with our mocked command runner
-	action := NewBuildAction(fakeCommandRunner)
+	action := NewMakeAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
 	// result assertions
@@ -59,7 +59,7 @@ func TestBuildAction_Skip(t *testing.T) {
 	assert.Len(t, *commandRuns, 0) // no commands ran
 }
 
-func TestBuildAction_Fail(t *testing.T) {
+func TestMakeAction_Fail(t *testing.T) {
 	// our Package struct
 	pkgPath := "/foo/bar/baz"
 	pkg := &pack.Package{
@@ -75,7 +75,7 @@ func TestBuildAction_Fail(t *testing.T) {
 	fakeCommandRunner, commandRuns := testutils.MakeFakeCommandRunner(&commandRetvals)
 
 	// execute the action with our mocked command runner
-	action := NewBuildAction(fakeCommandRunner)
+	action := NewMakeAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
 	// result assertions
@@ -87,5 +87,5 @@ func TestBuildAction_Fail(t *testing.T) {
 	}
 	assert.Equal(t, expectedBuildCommand, (*commandRuns)[0])
 	assert.ErrorContains(t, result.GetError(), expectedErr)
-	assert.ErrorContains(t, result.GetError(), "build action error")
+	assert.ErrorContains(t, result.GetError(), "make action error")
 }

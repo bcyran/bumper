@@ -7,13 +7,13 @@ import (
 	"github.com/bcyran/bumper/pack"
 )
 
-var buildError = errors.New("build action error")
+var makeError = errors.New("make action error")
 
-type buildActionResult struct {
+type makeActionResult struct {
 	BaseActionResult
 }
 
-func (result *buildActionResult) String() string {
+func (result *makeActionResult) String() string {
 	if result.Status == ACTION_SKIPPED {
 		return ""
 	}
@@ -23,16 +23,16 @@ func (result *buildActionResult) String() string {
 	return "built"
 }
 
-type BuildAction struct {
+type MakeAction struct {
 	commandRunner CommandRunner
 }
 
-func NewBuildAction(commandRunner CommandRunner) *BuildAction {
-	return &BuildAction{commandRunner: commandRunner}
+func NewMakeAction(commandRunner CommandRunner) *MakeAction {
+	return &MakeAction{commandRunner: commandRunner}
 }
 
-func (action *BuildAction) Execute(pkg *pack.Package) ActionResult {
-	actionResult := &buildActionResult{}
+func (action *MakeAction) Execute(pkg *pack.Package) ActionResult {
+	actionResult := &makeActionResult{}
 
 	if !pkg.IsOutdated {
 		actionResult.Status = ACTION_SKIPPED
@@ -42,7 +42,7 @@ func (action *BuildAction) Execute(pkg *pack.Package) ActionResult {
 	_, err := action.commandRunner(pkg.Path, "makepkg", "--force", "--clean")
 	if err != nil {
 		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", buildError, err)
+		actionResult.Error = fmt.Errorf("%w: %w", makeError, err)
 	} else {
 		actionResult.Status = ACTION_SUCCESS
 	}

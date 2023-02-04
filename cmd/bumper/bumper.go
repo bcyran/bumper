@@ -88,7 +88,7 @@ enables you to run bumper in a dir containing multiple package dirs.`,
 
 func init() {
 	bumperCmd.Flags().BoolVarP(&doActions.bump, "bump", "b", true, "bump outdated packages")
-	bumperCmd.Flags().BoolVarP(&doActions.make, "make", "m", true, "make (build) bumped packages")
+	bumperCmd.Flags().BoolVarP(&doActions.make, "make", "m", true, "build bumped packages")
 	bumperCmd.Flags().BoolVarP(&doActions.commit, "commit", "c", true, "commit changes")
 	bumperCmd.Flags().BoolVarP(&doActions.push, "push", "p", false, "push commited changes")
 	bumperCmd.Flags().IntVarP(&collectDepth, "depth", "d", 1, "depth of dir recursion in search for packages")
@@ -107,7 +107,7 @@ func createActions(doActions DoActions, bumperConfig config.Provider) []bumper.A
 	}
 
 	if doActions.make == true {
-		actions = append(actions, bumper.NewBuildAction(bumper.ExecCommand))
+		actions = append(actions, bumper.NewMakeAction(bumper.ExecCommand))
 	}
 
 	if doActions.commit == true {
