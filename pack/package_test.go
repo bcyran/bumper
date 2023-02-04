@@ -7,6 +7,7 @@ import (
 
 	"github.com/bcyran/bumper/internal/testutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -30,7 +31,8 @@ pkgbase = expected_name
 
 func TestLoadPackage_Valid(t *testing.T) {
 	packagePath := filepath.Join(t.TempDir(), "package")
-	testutils.CreatePackage(packagePath, []byte{}, srcinfoBytes)
+	err := testutils.CreatePackage(packagePath, []byte{}, srcinfoBytes)
+	require.Nil(t, err)
 
 	loadedPackage, err := LoadPackage(packagePath)
 
@@ -52,7 +54,8 @@ pkgver() {
 build() {
 }
 `)
-	testutils.CreatePackage(packagePath, pkgbuildBytes, srcinfoBytes)
+	err := testutils.CreatePackage(packagePath, pkgbuildBytes, srcinfoBytes)
+	require.Nil(t, err)
 
 	loadedPackage, err := LoadPackage(packagePath)
 
@@ -76,7 +79,8 @@ func TestLoadPackage_PathNotExisting(t *testing.T) {
 
 func TestLoadPackage_PathNotDirectory(t *testing.T) {
 	notDirectoryPath := filepath.Join(t.TempDir(), "not_directory")
-	os.Create(notDirectoryPath)
+	_, createErr := os.Create(notDirectoryPath)
+	require.Nil(t, createErr)
 
 	_, err := LoadPackage(notDirectoryPath)
 
@@ -86,7 +90,8 @@ func TestLoadPackage_PathNotDirectory(t *testing.T) {
 
 func TestLoadPackage_PathNoPkbuild(t *testing.T) {
 	noPkgbuildPath := filepath.Join(t.TempDir(), "directory")
-	os.Mkdir(noPkgbuildPath, 0o755)
+	mkdirErr := os.Mkdir(noPkgbuildPath, 0o755)
+	require.Nil(t, mkdirErr)
 
 	_, err := LoadPackage(noPkgbuildPath)
 
@@ -96,8 +101,10 @@ func TestLoadPackage_PathNoPkbuild(t *testing.T) {
 
 func TestLoadPackage_PathNoSrcinfo(t *testing.T) {
 	noSrcinfoPath := filepath.Join(t.TempDir(), "directory")
-	os.Mkdir(noSrcinfoPath, 0o755)
-	os.Create(filepath.Join(noSrcinfoPath, "PKGBUILD"))
+	mkdirErr := os.Mkdir(noSrcinfoPath, 0o755)
+	require.Nil(t, mkdirErr)
+	_, createErr := os.Create(filepath.Join(noSrcinfoPath, "PKGBUILD"))
+	require.Nil(t, createErr)
 
 	_, err := LoadPackage(noSrcinfoPath)
 

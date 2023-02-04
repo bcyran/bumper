@@ -2,16 +2,17 @@ package bumper
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/bcyran/bumper/internal/testutils"
 	"github.com/bcyran/bumper/pack"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func createNamedPackage(path string, name string) {
+func createNamedPackage(path string, name string) error {
 	srcinfo := fmt.Sprintf(`
 pkgbase = %s
         pkgname = %s
@@ -19,7 +20,7 @@ pkgbase = %s
         pkgver = some_ver
         pkgrel = some_rel
 `, name, name)
-	testutils.CreatePackage(path, []byte{}, []byte(srcinfo))
+	return testutils.CreatePackage(path, []byte{}, []byte(srcinfo))
 }
 
 func packagesNames(packages []pack.Package) []string {
@@ -32,7 +33,8 @@ func packagesNames(packages []pack.Package) []string {
 
 func TestCollectPackages_Single(t *testing.T) {
 	packagePath := filepath.Join(t.TempDir(), "pack")
-	createNamedPackage(packagePath, "foo-pack")
+	err := createNamedPackage(packagePath, "foo-pack")
+	require.Nil(t, err)
 
 	foundPackages, err := CollectPackages(packagePath, 0)
 	assert.NoError(t, err)
@@ -41,12 +43,18 @@ func TestCollectPackages_Single(t *testing.T) {
 
 func TestCollectPackages_Recursive(t *testing.T) {
 	rootDir := t.TempDir()
-	createNamedPackage(filepath.Join(rootDir, ".a"), "ignore")
-	createNamedPackage(filepath.Join(rootDir, "a"), "pack1")
-	createNamedPackage(filepath.Join(rootDir, "b"), "pack2")
-	createNamedPackage(filepath.Join(rootDir, "c/pack3"), "pack3")
-	createNamedPackage(filepath.Join(rootDir, "d/more/pack4"), "pack4")
-	ioutil.WriteFile(filepath.Join(rootDir, "random-file"), []byte("whatever"), 0o644)
+	errs := []error{
+		createNamedPackage(filepath.Join(rootDir, ".a"), "ignore"),
+		createNamedPackage(filepath.Join(rootDir, "a"), "pack1"),
+		createNamedPackage(filepath.Join(rootDir, "b"), "pack2"),
+		createNamedPackage(filepath.Join(rootDir, "c/pack3"), "pack3"),
+		createNamedPackage(filepath.Join(rootDir, "d/more/pack4"), "pack4"),
+	}
+	for _, maybeErr := range errs {
+		require.Nil(t, maybeErr)
+	}
+	err := os.WriteFile(filepath.Join(rootDir, "random-file"), []byte("whatever"), 0o644)
+	require.Nil(t, err)
 
 	cases := map[int][]string{
 		0: {},
@@ -64,7 +72,8 @@ func TestCollectPackages_Recursive(t *testing.T) {
 
 func TestCollectPackages_Error(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "not-a-dir")
-	ioutil.WriteFile(filePath, []byte{}, 0o644)
+	err := os.WriteFile(filePath, []byte{}, 0o644)
+	require.Nil(t, err)
 
 	cases := []int{0, 1}
 

@@ -15,38 +15,38 @@ var (
 		"{empty: {}, github: {apiKey: test_api_key}}",
 	)))
 	gitHubEmptyConfig  = gitHubConfigProvider.Get("empty")
-	gitHubApiKeyConfig = gitHubConfigProvider.Get("github")
+	gitHubAPIKeyConfig = gitHubConfigProvider.Get("github")
 )
 
 func TestNewGithub_Valid(t *testing.T) {
-	validUrl := "https://github.com/bcyran/timewall?foo=bar#whatever"
+	validURL := "https://github.com/bcyran/timewall?foo=bar#whatever"
 	expectedResult := gitHubProvider{
 		owner: "bcyran",
 		repo:  "timewall",
 	}
 
-	result := newGitHubProvider(validUrl, gitHubEmptyConfig)
+	result := newGitHubProvider(validURL, gitHubEmptyConfig)
 
 	assert.Equal(t, &expectedResult, result)
 }
 
 func TestNewGithub_ValidWithApiKey(t *testing.T) {
-	validUrl := "https://github.com/bcyran/timewall?foo=bar#whatever"
+	validURL := "https://github.com/bcyran/timewall?foo=bar#whatever"
 	expectedResult := gitHubProvider{
 		owner:  "bcyran",
 		repo:   "timewall",
 		apiKey: "test_api_key",
 	}
 
-	result := newGitHubProvider(validUrl, gitHubApiKeyConfig)
+	result := newGitHubProvider(validURL, gitHubAPIKeyConfig)
 
 	assert.Equal(t, &expectedResult, result)
 }
 
 func TestNewGithub_Invalid(t *testing.T) {
-	invalidUrl := "https://github.com/randompath"
+	invalidURL := "https://github.com/randompath"
 
-	result := newGitHubProvider(invalidUrl, gitHubEmptyConfig)
+	result := newGitHubProvider(invalidURL, gitHubEmptyConfig)
 
 	assert.Nil(t, result)
 }

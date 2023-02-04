@@ -1,11 +1,12 @@
 package pack
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseSrcinfo_Valid(t *testing.T) {
@@ -19,7 +20,8 @@ pkgbase = expected_base
 		source = https://fake.source
 		source = baz::https://foo.bar
 	`)
-	ioutil.WriteFile(srcinfoPath, srcinfoText, 0o644)
+	writeErr := os.WriteFile(srcinfoPath, srcinfoText, 0o644)
+	require.Nil(t, writeErr)
 
 	parsedSrcinfo, err := ParseSrcinfo(srcinfoPath)
 
@@ -44,7 +46,8 @@ pkgbase = expected_base
         url = expected_url
         pkgrel = expected_rel
 	`)
-	ioutil.WriteFile(srcinfoPath, srcinfoText, 0o644)
+	writeErr := os.WriteFile(srcinfoPath, srcinfoText, 0o644)
+	require.Nil(t, writeErr)
 
 	_, err := ParseSrcinfo(srcinfoPath)
 

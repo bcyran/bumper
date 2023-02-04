@@ -1,20 +1,22 @@
 package bumper
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/config"
 )
 
 func TestReadConfig_PathOk(t *testing.T) {
 	bumperConfigDirPath := filepath.Join(t.TempDir(), "some/non-standard/dir")
-	os.MkdirAll(bumperConfigDirPath, 0o755)
+	err := os.MkdirAll(bumperConfigDirPath, 0o755)
+	require.Nil(t, err)
 	configPath := filepath.Join(bumperConfigDirPath, "config.yaml")
-	err := ioutil.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0o644)
+	err = os.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0o644)
+	require.Nil(t, err)
 
 	actualConfig, err := ReadConfig(configPath)
 
@@ -33,9 +35,11 @@ func TestReadConfig_DefaultOk(t *testing.T) {
 	configDirPath := filepath.Join(t.TempDir(), "config")
 	t.Setenv("XDG_CONFIG_HOME", configDirPath)
 	bumperConfigDirPath := filepath.Join(configDirPath, "bumper")
-	os.MkdirAll(bumperConfigDirPath, 0o755)
+	err := os.MkdirAll(bumperConfigDirPath, 0o755)
+	require.Nil(t, err)
 	configPath := filepath.Join(bumperConfigDirPath, "config.yaml")
-	err := ioutil.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0o644)
+	err = os.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0o644)
+	require.Nil(t, err)
 
 	actualConfig, err := ReadConfig("")
 

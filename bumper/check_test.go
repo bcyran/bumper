@@ -95,11 +95,11 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 	assert.ErrorContains(t, result.GetError(), expectedErr)
 }
 
-func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
+func TestCheckAction_FailChecksMultipleURLs(t *testing.T) {
 	expectedErr := "some random error"
-	checkedUrls := []string{}
+	checkedURLs := []string{}
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
-		checkedUrls = append(checkedUrls, url)
+		checkedURLs = append(checkedURLs, url)
 		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
 	action := NewCheckAction(verProvFactory, emptyConfig)
@@ -113,7 +113,7 @@ func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
 	result := action.Execute(&pkg)
 
 	// upstream provider assertions
-	assert.ElementsMatch(t, []string{"first.url", "second.url", "third.url"}, checkedUrls)
+	assert.ElementsMatch(t, []string{"first.url", "second.url", "third.url"}, checkedURLs)
 	// result assertions
 	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "?", result.String())

@@ -49,6 +49,7 @@ func TestRrpmvercmp(t *testing.T) {
 // assertVersionsComparison compares each version from aVers with each version from bVers
 // and asserts that all those comparisons result in the same expected value.
 func assertVersionsComparison(t *testing.T, aVers, bVers []string, expected int) {
+	t.Helper()
 	for _, aVer := range aVers {
 		for _, bVer := range bVers {
 			assert.Equal(t, expected, Rpmvercmp(aVer, bVer), "rpmvercmp(%s, %s) should be %d", aVer, bVer, expected)

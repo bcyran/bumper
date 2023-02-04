@@ -10,6 +10,7 @@ import (
 	"github.com/bcyran/bumper/pack"
 	"github.com/bcyran/bumper/upstream"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func makeOutdatedPackage(dir string, pkgver string, pkgrel string, upstreamVersion string) *pack.Package {
@@ -47,7 +48,8 @@ func TestBumpAction_Success(t *testing.T) {
 
 	// build our Package struct and write PKGBUILD
 	pkg := makeOutdatedPackage(t.TempDir(), versionBefore, pkgrelBefore, expectedVersion)
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString(versionBefore, pkgrelBefore)), 0o644)
+	err := os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString(versionBefore, pkgrelBefore)), 0o644)
+	require.Nil(t, err)
 
 	// mock return values for two command runs
 	commandRetvals := []testutils.CommandRunnerRetval{
@@ -114,7 +116,8 @@ func TestBumpAction_FailBump(t *testing.T) {
 
 func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
+	err := os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
+	require.Nil(t, err)
 
 	expectedErr := "omg, updpkgsums failed"
 	commandRetvals := []testutils.CommandRunnerRetval{
@@ -133,7 +136,8 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 
 func TestBumpAction_FailMakepkg(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
+	err := os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
+	require.Nil(t, err)
 
 	expectedErr := "oh no, poor makepkg error"
 	commandRetvals := []testutils.CommandRunnerRetval{

@@ -15,16 +15,16 @@ func TestNewPypi_Valid(t *testing.T) {
 		"https://pypi.io/packages/source/f/foo/foo-1.1.0.tar.gz":                {packageName: "foo"},
 	}
 
-	for validUrl, expectedResult := range cases {
-		result := newPypiProvider(validUrl)
+	for validURL, expectedResult := range cases {
+		result := newPypiProvider(validURL)
 		assert.Equal(t, &expectedResult, result)
 	}
 }
 
 func TestNewPypi_Invalid(t *testing.T) {
-	invalidUrl := "https://whatever.url/packages/source/f/foo/foo-1.1.0.tar.gz"
+	invalidURL := "https://whatever.url/packages/source/f/foo/foo-1.1.0.tar.gz"
 
-	result := newPypiProvider(invalidUrl)
+	result := newPypiProvider(invalidURL)
 	assert.Nil(t, result)
 }
 

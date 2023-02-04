@@ -15,7 +15,7 @@ var (
 		"{empty: {}, gitlab: {apiKeys: {protected.gitlab.instance.com: test_api_key}}}",
 	)))
 	gitLabEmptyConfig  = gitLabConfigProvider.Get("empty")
-	gitLabApiKeyConfig = gitLabConfigProvider.Get("gitlab")
+	gitLabAPIKeyConfig = gitLabConfigProvider.Get("gitlab")
 )
 
 func TestNewGitLab_Valid(t *testing.T) {
@@ -53,20 +53,20 @@ func TestNewGitLab_Valid(t *testing.T) {
 		},
 	}
 
-	for validUrl, expectedResult := range cases {
-		result := newGitLabProvider(validUrl, gitLabApiKeyConfig)
+	for validURL, expectedResult := range cases {
+		result := newGitLabProvider(validURL, gitLabAPIKeyConfig)
 		assert.Equal(t, &expectedResult, result)
 	}
 }
 
 func TestNewGitLab_Invalid(t *testing.T) {
-	invalidUrls := []string{
+	invalidURLs := []string{
 		"https://gitlab.com/whatever",
 		"https://foo.com/user/project",
 	}
 
-	for _, invalidUrl := range invalidUrls {
-		result := newGitLabProvider(invalidUrl, gitLabEmptyConfig)
+	for _, invalidURL := range invalidURLs {
+		result := newGitLabProvider(invalidURL, gitLabEmptyConfig)
 		assert.Nil(t, result)
 	}
 }
