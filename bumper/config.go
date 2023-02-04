@@ -2,7 +2,6 @@ package bumper
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -20,7 +19,6 @@ var (
 
 func ReadConfig() (config.Provider, error) {
 	configPath, err := getConfigPath()
-	fmt.Printf("config path: %s\n", configPath)
 	if err != nil {
 		return nil, err
 	}
