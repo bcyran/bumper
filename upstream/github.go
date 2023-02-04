@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+
+	"go.uber.org/config"
 )
 
 var gitHubUrlRegex = regexp.MustCompile(`github\.com/([^/#?]+)/([^/#?]+)`)
@@ -26,12 +28,18 @@ type gitHubTagResp struct {
 	Name string `json:"name"`
 }
 
-func newGitHubProvider(url string) *gitHubProvider {
+func newGitHubProvider(url string, gitHubConfig config.Value) *gitHubProvider {
 	match := gitHubUrlRegex.FindStringSubmatch(url)
 	if len(match) == 0 {
 		return nil
 	}
-	return &gitHubProvider{owner: match[1], repo: match[2]}
+	provider := gitHubProvider{owner: match[1], repo: match[2]}
+
+	if apiKey := gitHubConfig.Get("apiKey"); apiKey.HasValue() {
+		apiKey.Populate(&provider.apiKey)
+	}
+
+	return &provider
 }
 
 func (gitHub *gitHubProvider) Equal(other interface{}) bool {

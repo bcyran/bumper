@@ -1,11 +1,21 @@
 package upstream
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/bcyran/bumper/internal/testutils"
 	"github.com/h2non/gock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/config"
+)
+
+var (
+	gitHubConfigProvider, _ = config.NewYAML(config.Source(strings.NewReader(
+		"{empty: {}, github: {apiKey: test_api_key}}",
+	)))
+	gitHubEmptyConfig  = gitHubConfigProvider.Get("empty")
+	gitHubApiKeyConfig = gitHubConfigProvider.Get("github")
 )
 
 func TestNewGithub_Valid(t *testing.T) {
@@ -15,7 +25,20 @@ func TestNewGithub_Valid(t *testing.T) {
 		repo:  "timewall",
 	}
 
-	result := newGitHubProvider(validUrl)
+	result := newGitHubProvider(validUrl, gitHubEmptyConfig)
+
+	assert.Equal(t, &expectedResult, result)
+}
+
+func TestNewGithub_ValidWithApiKey(t *testing.T) {
+	validUrl := "https://github.com/bcyran/timewall?foo=bar#whatever"
+	expectedResult := gitHubProvider{
+		owner:  "bcyran",
+		repo:   "timewall",
+		apiKey: "test_api_key",
+	}
+
+	result := newGitHubProvider(validUrl, gitHubApiKeyConfig)
 
 	assert.Equal(t, &expectedResult, result)
 }
@@ -23,7 +46,7 @@ func TestNewGithub_Valid(t *testing.T) {
 func TestNewGithub_Invalid(t *testing.T) {
 	invalidUrl := "https://github.com/randompath"
 
-	result := newGitHubProvider(invalidUrl)
+	result := newGitHubProvider(invalidUrl, gitHubEmptyConfig)
 
 	assert.Nil(t, result)
 }

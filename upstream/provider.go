@@ -16,10 +16,10 @@ func NewVersionProvider(url string, providersConfig config.Value) VersionProvide
 	if pypiProvider := newPypiProvider(url); pypiProvider != nil {
 		return pypiProvider
 	}
-	if gitHubProvider := newGitHubProvider(url); gitHubProvider != nil {
+	if gitHubProvider := newGitHubProvider(url, providersConfig.Get("github")); gitHubProvider != nil {
 		return gitHubProvider
 	}
-	if gitLabProvider := newGitLabProvider(url); gitLabProvider != nil {
+	if gitLabProvider := newGitLabProvider(url, providersConfig.Get("gitlab")); gitLabProvider != nil {
 		return gitLabProvider
 	}
 	return nil

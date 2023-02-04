@@ -1,11 +1,21 @@
 package upstream
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/bcyran/bumper/internal/testutils"
 	"github.com/h2non/gock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/config"
+)
+
+var (
+	gitLabConfigProvider, _ = config.NewYAML(config.Source(strings.NewReader(
+		"{empty: {}, gitlab: {apiKeys: {protected.gitlab.instance.com: test_api_key}}}",
+	)))
+	gitLabEmptyConfig  = gitLabConfigProvider.Get("empty")
+	gitLabApiKeyConfig = gitLabConfigProvider.Get("gitlab")
 )
 
 func TestNewGitLab_Valid(t *testing.T) {
@@ -35,10 +45,16 @@ func TestNewGitLab_Valid(t *testing.T) {
 			owner:  "me",
 			repo:   "project",
 		},
+		"https://protected.gitlab.instance.com/user/project": {
+			netloc: "protected.gitlab.instance.com",
+			owner:  "user",
+			repo:   "project",
+			apiKey: "test_api_key",
+		},
 	}
 
 	for validUrl, expectedResult := range cases {
-		result := newGitLabProvider(validUrl)
+		result := newGitLabProvider(validUrl, gitLabApiKeyConfig)
 		assert.Equal(t, &expectedResult, result)
 	}
 }
@@ -50,7 +66,7 @@ func TestNewGitLab_Invalid(t *testing.T) {
 	}
 
 	for _, invalidUrl := range invalidUrls {
-		result := newGitLabProvider(invalidUrl)
+		result := newGitLabProvider(invalidUrl, gitLabEmptyConfig)
 		assert.Nil(t, result)
 	}
 }

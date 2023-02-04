@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+
+	"go.uber.org/config"
 )
 
 // Match any URL which *could* be a GitLab URL and contains 'git' in netloc.
@@ -29,12 +31,23 @@ type gitLabTagResp struct {
 	Name string `json:"name"`
 }
 
-func newGitLabProvider(url string) *gitLabProvider {
+func newGitLabProvider(url string, gitLabConfig config.Value) *gitLabProvider {
 	match := gitLabUrlRegex.FindStringSubmatch(url)
 	if len(match) == 0 {
 		return nil
 	}
-	return &gitLabProvider{netloc: match[1], owner: match[2], repo: match[3]}
+	provider := gitLabProvider{netloc: match[1], owner: match[2], repo: match[3]}
+
+	if apiKeys := gitLabConfig.Get("apiKeys"); apiKeys.HasValue() {
+		// config.Value.Get(path string) doesn't work when path contains dots, like URLs
+		apiKeysMap := map[string]string{}
+		apiKeys.Populate(&apiKeysMap)
+		if apiKey, apiKeyPresent := apiKeysMap[provider.netloc]; apiKeyPresent == true {
+			provider.apiKey = apiKey
+		}
+	}
+
+	return &provider
 }
 
 func (gitLab *gitLabProvider) Equal(other interface{}) bool {
