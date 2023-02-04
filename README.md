@@ -84,3 +84,4 @@ It will just continue as usual without using your keys.
 
 ## Credits / resources
 - https://github.com/simon04/aur-out-of-date
+- https://github.com/knqyf263/go-rpm-version
