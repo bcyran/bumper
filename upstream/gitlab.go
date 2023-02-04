@@ -16,6 +16,7 @@ type gitLabProvider struct {
 	netloc string
 	owner  string
 	repo   string
+	apiKey string
 }
 
 type gitLabReleaseResp struct {
@@ -33,7 +34,7 @@ func newGitLabProvider(url string) *gitLabProvider {
 	if len(match) == 0 {
 		return nil
 	}
-	return &gitLabProvider{match[1], match[2], match[3]}
+	return &gitLabProvider{netloc: match[1], owner: match[2], repo: match[3]}
 }
 
 func (gitLab *gitLabProvider) Equal(other interface{}) bool {
@@ -51,6 +52,14 @@ func (gitLab *gitLabProvider) projectId() string {
 
 func (gitLab *gitLabProvider) apiURL() string {
 	return fmt.Sprintf("https://%s/api/v4", gitLab.netloc)
+}
+
+func (gitLab *gitLabProvider) apiHeaders() map[string]string {
+	headers := map[string]string{}
+	if gitLab.apiKey != "" {
+		headers["Authorization"] = "Bearer " + gitLab.apiKey
+	}
+	return headers
 }
 
 func (gitLab *gitLabProvider) LatestVersion() (Version, error) {
@@ -77,7 +86,7 @@ func (gitLab *gitLabProvider) releasesURL() string {
 
 func (gitLab *gitLabProvider) latestReleaseVersion() (Version, error) {
 	var latestReleases []gitLabReleaseResp
-	if err := httpGetJSON(gitLab.releasesURL(), &latestReleases, nil); err != nil {
+	if err := httpGetJSON(gitLab.releasesURL(), &latestReleases, gitLab.apiHeaders()); err != nil {
 		return "", err
 	}
 
@@ -102,7 +111,7 @@ func (gitLab *gitLabProvider) tagsURL() string {
 
 func (gitLab *gitLabProvider) latestTagVersion() (Version, error) {
 	var latestTags []gitLabTagResp
-	if err := httpGetJSON(gitLab.tagsURL(), &latestTags, nil); err != nil {
+	if err := httpGetJSON(gitLab.tagsURL(), &latestTags, gitLab.apiHeaders()); err != nil {
 		return "", err
 	}
 

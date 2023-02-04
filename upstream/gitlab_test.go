@@ -3,6 +3,7 @@ package upstream
 import (
 	"testing"
 
+	"github.com/bcyran/bumper/internal/testutils"
 	"github.com/h2non/gock"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,6 +59,7 @@ func TestGitLabLatestVersion_Release(t *testing.T) {
 	defer gock.Off()
 	gock.New("https://gitlab.something.com").
 		Get("/api/v4/projects/foo/bar/releases").
+		AddMatcher(testutils.NoHeaderMatcher("Authorization")).
 		Reply(200).
 		JSON([]map[string]interface{}{
 			{
@@ -84,10 +86,31 @@ func TestGitLabLatestVersion_Release(t *testing.T) {
 	assert.Equal(t, Version("1.7.0"), result)
 }
 
+func TestGitLabLatestVersion_ReleaseWithApiKey(t *testing.T) {
+	defer gock.Off()
+	gock.New("https://gitlab.something.com").
+		Get("/api/v4/projects/foo/bar/releases").
+		MatchHeader("Authorization", "Bearer test_token").
+		Reply(200).
+		JSON([]map[string]interface{}{
+			{
+				"name":             "Release!",
+				"tag_name":         "1.1.1",
+				"upcoming_release": false,
+			},
+		})
+	gitLab := gitLabProvider{netloc: "gitlab.something.com", owner: "foo", repo: "bar", apiKey: "test_token"}
+
+	result, err := gitLab.LatestVersion()
+
+	assert.NoError(t, err)
+	assert.Equal(t, Version("1.1.1"), result)
+}
 func TestGitLabLatestVersion_Tag(t *testing.T) {
 	defer gock.Off()
 	gock.New("https://gitLab.com").
 		Get("/api/v4/projects/foo/bar/releases").
+		AddMatcher(testutils.NoHeaderMatcher("Authorization")).
 		Reply(200).
 		JSON([]interface{}{})
 	gock.New("https://gitLab.com").
@@ -107,14 +130,39 @@ func TestGitLabLatestVersion_Tag(t *testing.T) {
 	assert.Equal(t, Version("4.2.0"), result)
 }
 
+func TestGitLabLatestVersion_TagWithApiKey(t *testing.T) {
+	defer gock.Off()
+	gock.New("https://gitLab.com").
+		Get("/api/v4/projects/foo/bar/releases").
+		MatchHeader("Authorization", "Bearer test_token").
+		Reply(200).
+		JSON([]interface{}{})
+	gock.New("https://gitLab.com").
+		Get("/api/v4/projects/foo/bar/repository/tags").
+		MatchHeader("Authorization", "Bearer test_token").
+		Reply(200).
+		JSON([]map[string]interface{}{
+			{"name": "1.1.1"},
+		})
+
+	gitLab := gitLabProvider{netloc: "gitlab.com", owner: "foo", repo: "bar", apiKey: "test_token"}
+
+	result, err := gitLab.LatestVersion()
+
+	assert.NoError(t, err)
+	assert.Equal(t, Version("1.1.1"), result)
+}
+
 func TestGitLabLatestVersion_NoVersions(t *testing.T) {
 	defer gock.Off()
 	gock.New("https://gitlab.com").
 		Get("/api/v4/projects/foo/bar/releases").
+		AddMatcher(testutils.NoHeaderMatcher("Authorization")).
 		Reply(200).
 		JSON([]interface{}{})
 	gock.New("https://gitlab.com").
 		Get("/api/v4/projects/foo/bar/repository/tags").
+		AddMatcher(testutils.NoHeaderMatcher("Authorization")).
 		Reply(200).
 		JSON([]interface{}{})
 

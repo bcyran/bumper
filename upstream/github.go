@@ -10,8 +10,9 @@ var gitHubUrlRegex = regexp.MustCompile(`github\.com/([^/#?]+)/([^/#?]+)`)
 
 // gitHubProvider tries to find the latest version both in releases and tags of a GitHub repo.
 type gitHubProvider struct {
-	owner string
-	repo  string
+	owner  string
+	repo   string
+	apiKey string
 }
 
 type gitHubReleaseResp struct {
@@ -30,7 +31,7 @@ func newGitHubProvider(url string) *gitHubProvider {
 	if len(match) == 0 {
 		return nil
 	}
-	return &gitHubProvider{match[1], match[2]}
+	return &gitHubProvider{owner: match[1], repo: match[2]}
 }
 
 func (gitHub *gitHubProvider) Equal(other interface{}) bool {
@@ -40,6 +41,14 @@ func (gitHub *gitHubProvider) Equal(other interface{}) bool {
 	default:
 		return false
 	}
+}
+
+func (gitHub *gitHubProvider) apiHeaders() map[string]string {
+	headers := map[string]string{}
+	if gitHub.apiKey != "" {
+		headers["Authorization"] = "Bearer " + gitHub.apiKey
+	}
+	return headers
 }
 
 func (gitHub *gitHubProvider) LatestVersion() (Version, error) {
@@ -62,7 +71,7 @@ func (gitHub *gitHubProvider) LatestVersion() (Version, error) {
 
 func (gitHub *gitHubProvider) latestReleaseVersion() (Version, error) {
 	var latestReleases []gitHubReleaseResp
-	if err := httpGetJSON(gitHub.releasesURL(), &latestReleases, nil); err != nil {
+	if err := httpGetJSON(gitHub.releasesURL(), &latestReleases, gitHub.apiHeaders()); err != nil {
 		return "", err
 	}
 
@@ -87,7 +96,7 @@ func (gitHub *gitHubProvider) releasesURL() string {
 
 func (gitHub *gitHubProvider) latestTagVersion() (Version, error) {
 	var latestTags []gitHubTagResp
-	if err := httpGetJSON(gitHub.tagsURL(), &latestTags, nil); err != nil {
+	if err := httpGetJSON(gitHub.tagsURL(), &latestTags, gitHub.apiHeaders()); err != nil {
 		return "", err
 	}
 
