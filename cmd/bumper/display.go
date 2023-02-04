@@ -90,11 +90,11 @@ func (pkgDisplay *PackageDisplay) String() string {
 		}
 	}
 	var pkgError error
-	if pkgDisplay.finished == true {
-		if pkgDisplay.failed == true {
+	if pkgDisplay.finished {
+		if pkgDisplay.failed {
 			bullet = failureColor("✗")
 			pkgError = pkgDisplay.actionResults[len(pkgDisplay.actionResults)-1].GetError()
-		} else if pkgDisplay.skipped == true {
+		} else if pkgDisplay.skipped {
 			bullet = skippedColor("∅")
 		} else {
 			bullet = successColor("✓")
@@ -154,7 +154,7 @@ func (pkgListDisplay *PackageListDisplay) LiveDisplay(out WriteFlusher) {
 
 		finishedCount := 0
 		for _, pkgDisplay := range pkgListDisplay.packages {
-			if pkgDisplay.finished == true {
+			if pkgDisplay.finished {
 				finishedCount += 1
 			}
 			pkgDisplay.AnimationTick()

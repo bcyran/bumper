@@ -87,10 +87,10 @@ func (gitHub *gitHubProvider) latestReleaseVersion() (Version, error) {
 		if release.Draft || release.Prerelease {
 			continue
 		}
-		if version, isValid := parseVersion(release.TagName); isValid == true {
+		if version, isValid := parseVersion(release.TagName); isValid {
 			return version, nil
 		}
-		if version, isValid := parseVersion(release.Name); isValid == true {
+		if version, isValid := parseVersion(release.Name); isValid {
 			return version, nil
 		}
 	}
@@ -109,7 +109,7 @@ func (gitHub *gitHubProvider) latestTagVersion() (Version, error) {
 	}
 
 	for _, tag := range latestTags {
-		if version, isValid := parseVersion(tag.Name); isValid == true {
+		if version, isValid := parseVersion(tag.Name); isValid {
 			return version, nil
 		}
 	}

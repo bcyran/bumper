@@ -100,23 +100,23 @@ func createActions(doActions DoActions, bumperConfig config.Provider) []bumper.A
 		bumper.NewCheckAction(upstream.NewVersionProvider, bumperConfig.Get("check")),
 	}
 
-	if doActions.bump == true {
+	if doActions.bump {
 		actions = append(actions, bumper.NewBumpAction(bumper.ExecCommand))
 	} else {
 		return actions
 	}
 
-	if doActions.make == true {
+	if doActions.make {
 		actions = append(actions, bumper.NewMakeAction(bumper.ExecCommand))
 	}
 
-	if doActions.commit == true {
+	if doActions.commit {
 		actions = append(actions, bumper.NewCommitAction(bumper.ExecCommand))
 	} else {
 		return actions
 	}
 
-	if doActions.push == true {
+	if doActions.push {
 		actions = append(actions, bumper.NewPushAction(bumper.ExecCommand))
 	}
 

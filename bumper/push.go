@@ -51,7 +51,7 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
 		return actionResult
 	}
-	if isOnMaster == false {
+	if !isOnMaster {
 		actionResult.Status = ACTION_FAILED
 		actionResult.Error = fmt.Errorf("%w: not on master branch", pushError)
 		return actionResult
@@ -63,7 +63,7 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
 		return actionResult
 	}
-	if isBehindOrigin == false {
+	if !isBehindOrigin {
 		actionResult.Status = ACTION_SKIPPED
 		return actionResult
 	}

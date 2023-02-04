@@ -45,7 +45,7 @@ func (pypi *pypiProvider) LatestVersion() (Version, error) {
 	if err := httpGetJSON(pypi.packageInfoURL(), &packageInfo, nil); err != nil {
 		return "", err
 	}
-	if version, isValid := parseVersion(packageInfo.Info.Version); isValid == true {
+	if version, isValid := parseVersion(packageInfo.Info.Version); isValid {
 		return version, nil
 	}
 	return "", ErrVersionNotFound

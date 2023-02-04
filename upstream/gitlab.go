@@ -42,7 +42,7 @@ func newGitLabProvider(url string, gitLabConfig config.Value) *gitLabProvider {
 		// config.Value.Get(path string) doesn't work when path contains dots, like URLs
 		apiKeysMap := map[string]string{}
 		apiKeys.Populate(&apiKeysMap)
-		if apiKey, apiKeyPresent := apiKeysMap[provider.netloc]; apiKeyPresent == true {
+		if apiKey, apiKeyPresent := apiKeysMap[provider.netloc]; apiKeyPresent {
 			provider.apiKey = apiKey
 		}
 	}
@@ -107,10 +107,10 @@ func (gitLab *gitLabProvider) latestReleaseVersion() (Version, error) {
 		if release.Upcoming {
 			continue
 		}
-		if version, isValid := parseVersion(release.TagName); isValid == true {
+		if version, isValid := parseVersion(release.TagName); isValid {
 			return version, nil
 		}
-		if version, isValid := parseVersion(release.Name); isValid == true {
+		if version, isValid := parseVersion(release.Name); isValid {
 			return version, nil
 		}
 	}
@@ -129,7 +129,7 @@ func (gitLab *gitLabProvider) latestTagVersion() (Version, error) {
 	}
 
 	for _, tag := range latestTags {
-		if version, isValid := parseVersion(tag.Name); isValid == true {
+		if version, isValid := parseVersion(tag.Name); isValid {
 			return version, nil
 		}
 	}

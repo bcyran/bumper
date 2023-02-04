@@ -29,7 +29,7 @@ func (result *checkActionResult) String() string {
 	if result.cmpResult == 1 {
 		return fmt.Sprintf("%s -> %s", result.currentVersion, result.upstreamVersion)
 	} else if result.cmpResult == 0 {
-		return fmt.Sprintf("%s", result.currentVersion)
+		return result.currentVersion.GetVersionStr()
 	} else {
 		return fmt.Sprintf("%s < %s !", result.upstreamVersion, result.currentVersion)
 	}
