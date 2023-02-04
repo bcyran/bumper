@@ -11,8 +11,8 @@ import (
 const masterBranch = "master"
 
 var (
-	diffTarget = fmt.Sprintf("%s...origin/%s", masterBranch, masterBranch)
-	pushError  = errors.New("push action error")
+	diffTarget    = fmt.Sprintf("%s...origin/%s", masterBranch, masterBranch)
+	ErrPushAction = errors.New("push action error")
 )
 
 type pushActionResult struct {
@@ -20,10 +20,10 @@ type pushActionResult struct {
 }
 
 func (result *pushActionResult) String() string {
-	if result.Status == ACTION_SKIPPED {
+	if result.Status == ActionSkippedStatus {
 		return ""
 	}
-	if result.Status == ACTION_FAILED {
+	if result.Status == ActionFailedStatus {
 		return "push failed"
 	}
 	return "pushed"
@@ -41,40 +41,40 @@ func (action *PushAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &pushActionResult{}
 
 	if !pkg.IsOutdated {
-		actionResult.Status = ACTION_SKIPPED
+		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
 
 	isOnMaster, err := action.isOnMaster(pkg)
 	if err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: %w", ErrPushAction, err)
 		return actionResult
 	}
 	if !isOnMaster {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: not on master branch", pushError)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: not on master branch", ErrPushAction)
 		return actionResult
 	}
 
 	isBehindOrigin, err := action.isBehindOrigin(pkg)
 	if err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: %w", ErrPushAction, err)
 		return actionResult
 	}
 	if !isBehindOrigin {
-		actionResult.Status = ACTION_SKIPPED
+		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
 
 	if err := action.push(pkg); err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", pushError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: %w", ErrPushAction, err)
 		return actionResult
 	}
 
-	actionResult.Status = ACTION_SUCCESS
+	actionResult.Status = ActionSuccessStatus
 	return actionResult
 }
 

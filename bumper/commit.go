@@ -9,17 +9,17 @@ import (
 
 const expectedGitStatus = " M .SRCINFO\x00 M PKGBUILD\x00"
 
-var commitError = errors.New("commit action error")
+var ErrCommitAction = errors.New("commit action error")
 
 type commitActionResult struct {
 	BaseActionResult
 }
 
 func (result *commitActionResult) String() string {
-	if result.Status == ACTION_SKIPPED {
+	if result.Status == ActionSkippedStatus {
 		return ""
 	}
-	if result.Status == ACTION_FAILED {
+	if result.Status == ActionFailedStatus {
 		return "commit failed"
 	}
 	return "committed"
@@ -37,28 +37,28 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &commitActionResult{}
 
 	if !pkg.IsOutdated {
-		actionResult.Status = ACTION_SKIPPED
+		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
 
 	isChanged, err := action.isChanged(pkg)
 	if err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w %w", commitError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w %w", ErrCommitAction, err)
 		return actionResult
 	}
 	if !isChanged {
-		actionResult.Status = ACTION_SKIPPED
+		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
 
 	if err := action.commit(pkg); err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w %w", commitError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w %w", ErrCommitAction, err)
 		return actionResult
 	}
 
-	actionResult.Status = ACTION_SUCCESS
+	actionResult.Status = ActionSuccessStatus
 	return actionResult
 }
 

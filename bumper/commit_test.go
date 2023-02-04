@@ -31,7 +31,7 @@ func TestCommitAction_Success(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, ActionSuccessStatus, result.GetStatus())
 	assert.Equal(t, "committed", result.String())
 
 	// expect valid git status command
@@ -72,7 +72,7 @@ func TestCommitAction_Skip(t *testing.T) {
 	action := NewCommitAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, ActionSkippedStatus, result.GetStatus())
 	assert.Equal(t, "", result.String())
 }
 
@@ -94,7 +94,7 @@ func TestCommitAction_Fail(t *testing.T) {
 	action := NewCommitAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "commit failed", result.String())
 	assert.ErrorContains(t, result.GetError(), "unexpected changes in the repository")
 	assert.ErrorContains(t, result.GetError(), "commit action error")

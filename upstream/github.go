@@ -8,7 +8,7 @@ import (
 	"go.uber.org/config"
 )
 
-var gitHubUrlRegex = regexp.MustCompile(`github\.com/([^/#?]+)/([^/#?]+)`)
+var gitHubURLRegex = regexp.MustCompile(`github\.com/([^/#?]+)/([^/#?]+)`)
 
 // gitHubProvider tries to find the latest version both in releases and tags of a GitHub repo.
 type gitHubProvider struct {
@@ -29,7 +29,7 @@ type gitHubTagResp struct {
 }
 
 func newGitHubProvider(url string, gitHubConfig config.Value) *gitHubProvider {
-	match := gitHubUrlRegex.FindStringSubmatch(url)
+	match := gitHubURLRegex.FindStringSubmatch(url)
 	if len(match) == 0 {
 		return nil
 	}

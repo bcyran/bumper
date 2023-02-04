@@ -26,7 +26,7 @@ pkgbase = expected_base
 	assert.NoError(t, err)
 	expectedSrcinfo := Srcinfo{
 		Pkgbase: "expected_base",
-		Url:     "expected_url",
+		URL:     "expected_url",
 		FullVersion: &FullVersion{
 			Pkgver: Version("expected_ver"),
 			Pkgrel: "expected_rel",

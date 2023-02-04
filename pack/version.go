@@ -84,9 +84,8 @@ func Rpmvercmp(a, b string) int {
 		if bSegEnd == bSegStart {
 			if isNum {
 				return 1
-			} else {
-				return -1
 			}
+			return -1
 		}
 
 		// Let's cut out our segments.
@@ -129,9 +128,8 @@ func Rpmvercmp(a, b string) int {
 	// - otherwise a is newer.
 	if aSegStart >= len(a) && !isAlpha(b[bSegStart]) || aSegStart < len(a) && isAlpha(a[aSegStart]) {
 		return -1
-	} else {
-		return 1
 	}
+	return 1
 }
 
 func isAlNum(b byte) bool {

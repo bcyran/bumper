@@ -11,7 +11,7 @@ import (
 
 // Match any URL which *could* be a GitLab URL and contains 'git' in netloc.
 // This is to try and handle instances other than gitlab.com, e.g.: foogit.bar.com.
-var gitLabUrlRegex = regexp.MustCompile(`([^/#?]*git[^/#?]*)/([^/#?]+)/([^#?]+?)(/\-/.*)?$`)
+var gitLabURLRegex = regexp.MustCompile(`([^/#?]*git[^/#?]*)/([^/#?]+)/([^#?]+?)(/\-/.*)?$`)
 
 // gitLabProvider tries to find the latest version both in releases and tags of a gitLab repo.
 type gitLabProvider struct {
@@ -32,7 +32,7 @@ type gitLabTagResp struct {
 }
 
 func newGitLabProvider(url string, gitLabConfig config.Value) *gitLabProvider {
-	match := gitLabUrlRegex.FindStringSubmatch(url)
+	match := gitLabURLRegex.FindStringSubmatch(url)
 	if len(match) == 0 {
 		return nil
 	}
@@ -59,7 +59,7 @@ func (gitLab *gitLabProvider) Equal(other interface{}) bool {
 	}
 }
 
-func (gitLab *gitLabProvider) projectId() string {
+func (gitLab *gitLabProvider) projectID() string {
 	return url.PathEscape(fmt.Sprintf("%s/%s", gitLab.owner, gitLab.repo))
 }
 
@@ -94,7 +94,7 @@ func (gitLab *gitLabProvider) LatestVersion() (Version, error) {
 }
 
 func (gitLab *gitLabProvider) releasesURL() string {
-	return fmt.Sprintf("%s/projects/%s/releases", gitLab.apiURL(), gitLab.projectId())
+	return fmt.Sprintf("%s/projects/%s/releases", gitLab.apiURL(), gitLab.projectID())
 }
 
 func (gitLab *gitLabProvider) latestReleaseVersion() (Version, error) {
@@ -119,7 +119,7 @@ func (gitLab *gitLabProvider) latestReleaseVersion() (Version, error) {
 }
 
 func (gitLab *gitLabProvider) tagsURL() string {
-	return fmt.Sprintf("%s/projects/%s/repository/tags", gitLab.apiURL(), gitLab.projectId())
+	return fmt.Sprintf("%s/projects/%s/repository/tags", gitLab.apiURL(), gitLab.projectID())
 }
 
 func (gitLab *gitLabProvider) latestTagVersion() (Version, error) {

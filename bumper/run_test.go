@@ -47,20 +47,20 @@ func TestRun_Success(t *testing.T) {
 		{Srcinfo: &pack.Srcinfo{Pkgbase: "pkgB"}},
 	}
 	actions := []Action{
-		newTestAction(ACTION_SUCCESS, "first result"),
-		newTestAction(ACTION_FAILED, "second result"),
-		newTestAction(ACTION_SUCCESS, "this shouldn't be executed"),
+		newTestAction(ActionSuccessStatus, "first result"),
+		newTestAction(ActionFailedStatus, "second result"),
+		newTestAction(ActionSuccessStatus, "this shouldn't be executed"),
 	}
 
 	// expected values
 	expectedResults := [][]ActionResult{
 		{
-			newTestActionResult(ACTION_SUCCESS, "pkgA: first result"),
-			newTestActionResult(ACTION_FAILED, "pkgA: second result"),
+			newTestActionResult(ActionSuccessStatus, "pkgA: first result"),
+			newTestActionResult(ActionFailedStatus, "pkgA: second result"),
 		},
 		{
-			newTestActionResult(ACTION_SUCCESS, "pkgB: first result"),
-			newTestActionResult(ACTION_FAILED, "pkgB: second result"),
+			newTestActionResult(ActionSuccessStatus, "pkgB: first result"),
+			newTestActionResult(ActionFailedStatus, "pkgB: second result"),
 		},
 	}
 	expectedFinished := []bool{true, true}
@@ -92,14 +92,14 @@ func TestRun_Skip(t *testing.T) {
 		{Srcinfo: &pack.Srcinfo{Pkgbase: "pkgA"}},
 	}
 	actions := []Action{
-		newTestAction(ACTION_SKIPPED, "skipped, should stop now"),
-		newTestAction(ACTION_SUCCESS, "this shouldn't be executed"),
+		newTestAction(ActionSkippedStatus, "skipped, should stop now"),
+		newTestAction(ActionSuccessStatus, "this shouldn't be executed"),
 	}
 
 	// expected values
 	expectedResults := [][]ActionResult{
 		{
-			newTestActionResult(ACTION_SKIPPED, "pkgA: skipped, should stop now"),
+			newTestActionResult(ActionSkippedStatus, "pkgA: skipped, should stop now"),
 		},
 	}
 	expectedFinished := []bool{true}

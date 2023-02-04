@@ -7,9 +7,9 @@ import (
 type ActionStatus int
 
 const (
-	ACTION_SUCCESS ActionStatus = iota
-	ACTION_SKIPPED
-	ACTION_FAILED
+	ActionSuccessStatus ActionStatus = iota
+	ActionSkippedStatus
+	ActionFailedStatus
 )
 
 type ActionResult interface {

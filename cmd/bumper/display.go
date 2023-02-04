@@ -65,10 +65,10 @@ func (pkgDisplay *PackageDisplay) SetFinished() {
 	pkgDisplay.mtx.Lock()
 	pkgDisplay.finished = true
 	lastResult := pkgDisplay.actionResults[len(pkgDisplay.actionResults)-1]
-	if lastResult.GetStatus() == bumper.ACTION_FAILED {
+	if lastResult.GetStatus() == bumper.ActionFailedStatus {
 		pkgDisplay.failed = true
 	}
-	if len(pkgDisplay.actionResults) == 1 && lastResult.GetStatus() == bumper.ACTION_SKIPPED {
+	if len(pkgDisplay.actionResults) == 1 && lastResult.GetStatus() == bumper.ActionSkippedStatus {
 		pkgDisplay.skipped = true
 	}
 	pkgDisplay.mtx.Unlock()
@@ -155,7 +155,7 @@ func (pkgListDisplay *PackageListDisplay) LiveDisplay(out WriteFlusher) {
 		finishedCount := 0
 		for _, pkgDisplay := range pkgListDisplay.packages {
 			if pkgDisplay.finished {
-				finishedCount += 1
+				finishedCount++
 			}
 			pkgDisplay.AnimationTick()
 		}

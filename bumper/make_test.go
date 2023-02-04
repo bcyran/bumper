@@ -28,7 +28,7 @@ func TestMakeAction_Success(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, ActionSuccessStatus, result.GetStatus())
 	assert.Equal(t, "built", result.String())
 	// command assertions
 	expectedBuildCommand := testutils.CommandRunnerParams{
@@ -53,7 +53,7 @@ func TestMakeAction_Skip(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, ActionSkippedStatus, result.GetStatus())
 	assert.Equal(t, "", result.String())
 	// command assertions
 	assert.Len(t, *commandRuns, 0) // no commands ran
@@ -79,7 +79,7 @@ func TestMakeAction_Fail(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "build failed", result.String())
 	// command assertions
 	expectedBuildCommand := testutils.CommandRunnerParams{

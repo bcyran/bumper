@@ -40,7 +40,7 @@ func TestCheckAction_Success(t *testing.T) {
 	action := NewCheckAction(verProvFactory, configWithVersion)
 	pkg := pack.Package{
 		Srcinfo: &pack.Srcinfo{
-			Url: "foo",
+			URL: "foo",
 			FullVersion: &pack.FullVersion{
 				Pkgver: pack.Version("1.0.0"),
 			},
@@ -50,7 +50,7 @@ func TestCheckAction_Success(t *testing.T) {
 	result := action.Execute(&pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, ActionSuccessStatus, result.GetStatus())
 	assert.Equal(t, "1.0.0 -> 2.0.0", result.String())
 	// package assertions
 	assert.Equal(t, upstream.Version("2.0.0"), pkg.UpstreamVersion)
@@ -60,22 +60,22 @@ func TestCheckAction_Success(t *testing.T) {
 func TestCheckAction_Skip(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider { return nil }
 	action := NewCheckAction(verProvFactory, emptyConfig)
-	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}, IsVCS: true}
+	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}, IsVCS: true}
 
 	result := action.Execute(&pkg)
 
-	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, ActionSkippedStatus, result.GetStatus())
 	assert.Equal(t, "-", result.String())
 }
 
 func TestCheckAction_FailNoProvider(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider { return nil }
 	action := NewCheckAction(verProvFactory, emptyConfig)
-	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}}
+	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}}
 
 	result := action.Execute(&pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "?", result.String())
 	assert.ErrorContains(t, result.GetError(), "no upstream provider found")
 }
@@ -86,11 +86,11 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
 	action := NewCheckAction(verProvFactory, emptyConfig)
-	pkg := pack.Package{Srcinfo: &pack.Srcinfo{Url: "foo"}}
+	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}}
 
 	result := action.Execute(&pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "?", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
 }
@@ -105,7 +105,7 @@ func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
 	action := NewCheckAction(verProvFactory, emptyConfig)
 	pkg := pack.Package{
 		Srcinfo: &pack.Srcinfo{
-			Url:    "first.url",
+			URL:    "first.url",
 			Source: []string{"second.url", "file.name::third.url"},
 		},
 	}
@@ -115,7 +115,7 @@ func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
 	// upstream provider assertions
 	assert.ElementsMatch(t, []string{"first.url", "second.url", "third.url"}, checkedUrls)
 	// result assertions
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "?", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
 }
@@ -123,19 +123,19 @@ func TestCheckAction_FailChecksMultipleUrls(t *testing.T) {
 func TestCheckActionResult_String(t *testing.T) {
 	cases := map[checkActionResult]string{
 		{
-			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+			BaseActionResult: BaseActionResult{Status: ActionSuccessStatus},
 			currentVersion:   pack.Version("curr"),
 			upstreamVersion:  upstream.Version("upstr"),
 			cmpResult:        1,
 		}: "curr -> upstr",
 		{
-			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+			BaseActionResult: BaseActionResult{Status: ActionSuccessStatus},
 			currentVersion:   pack.Version("curr"),
 			upstreamVersion:  upstream.Version("upstr"),
 			cmpResult:        -1,
 		}: "upstr < curr !",
 		{
-			BaseActionResult: BaseActionResult{Status: ACTION_SUCCESS},
+			BaseActionResult: BaseActionResult{Status: ActionSuccessStatus},
 			currentVersion:   pack.Version("curr"),
 			cmpResult:        0,
 		}: "curr",

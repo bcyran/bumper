@@ -7,17 +7,17 @@ import (
 	"github.com/bcyran/bumper/pack"
 )
 
-var makeError = errors.New("make action error")
+var ErrMakeAction = errors.New("make action error")
 
 type makeActionResult struct {
 	BaseActionResult
 }
 
 func (result *makeActionResult) String() string {
-	if result.Status == ACTION_SKIPPED {
+	if result.Status == ActionSkippedStatus {
 		return ""
 	}
-	if result.Status == ACTION_FAILED {
+	if result.Status == ActionFailedStatus {
 		return "build failed"
 	}
 	return "built"
@@ -35,16 +35,16 @@ func (action *MakeAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &makeActionResult{}
 
 	if !pkg.IsOutdated {
-		actionResult.Status = ACTION_SKIPPED
+		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
 
 	_, err := action.commandRunner(pkg.Path, "makepkg", "--force", "--clean")
 	if err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", makeError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: %w", ErrMakeAction, err)
 	} else {
-		actionResult.Status = ACTION_SUCCESS
+		actionResult.Status = ActionSuccessStatus
 	}
 
 	return actionResult

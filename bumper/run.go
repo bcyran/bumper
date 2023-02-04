@@ -45,7 +45,7 @@ func runPackageActions(pkg *pack.Package, actions []Action, resultChan chan Acti
 
 		resultChan <- actionResult
 
-		if actionResult.GetStatus() != ACTION_SUCCESS {
+		if actionResult.GetStatus() != ActionSuccessStatus {
 			break
 		}
 	}

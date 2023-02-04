@@ -28,7 +28,7 @@ func TestPushAction_Success(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, ActionSuccessStatus, result.GetStatus())
 	assert.Equal(t, "pushed", result.String())
 
 	// expect valid git branch command
@@ -67,7 +67,7 @@ func TestPushAction_Skip(t *testing.T) {
 	action := NewPushAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, ActionSkippedStatus, result.GetStatus())
 	assert.Equal(t, "", result.String())
 }
 
@@ -87,7 +87,7 @@ func TestPushAction_FailWrongBranch(t *testing.T) {
 	action := NewPushAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "push failed", result.String())
 	assert.ErrorContains(t, result.GetError(), "not on master branch")
 	assert.ErrorContains(t, result.GetError(), "push action error")
@@ -110,7 +110,7 @@ func TestPushAction_FailGitError(t *testing.T) {
 	action := NewPushAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "push failed", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
 	assert.ErrorContains(t, result.GetError(), "push action error")

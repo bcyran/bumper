@@ -61,7 +61,7 @@ func TestBumpAction_Success(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_SUCCESS, result.GetStatus())
+	assert.Equal(t, ActionSuccessStatus, result.GetStatus())
 	assert.Equal(t, "bumped", result.String())
 
 	// PKGBUILD assertions
@@ -92,7 +92,7 @@ func TestBumpAction_Skip(t *testing.T) {
 	result := action.Execute(pkg)
 
 	// result assertions
-	assert.Equal(t, ACTION_SKIPPED, result.GetStatus())
+	assert.Equal(t, ActionSkippedStatus, result.GetStatus())
 	assert.Equal(t, "", result.String())
 	// command assertions
 	assert.Len(t, *commandRuns, 0) // no commands ran
@@ -106,7 +106,7 @@ func TestBumpAction_FailBump(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "bump failed", result.String())
 	assert.ErrorContains(t, result.GetError(), "PKGBUILD: no such file or directory")
 	assert.ErrorContains(t, result.GetError(), "bump action error")
@@ -125,7 +125,7 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "updpkgsums failed", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
 	assert.ErrorContains(t, result.GetError(), "bump action error")
@@ -145,7 +145,7 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 	action := NewBumpAction(fakeCommandRunner)
 	result := action.Execute(pkg)
 
-	assert.Equal(t, ACTION_FAILED, result.GetStatus())
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "makepkg failed", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
 	assert.ErrorContains(t, result.GetError(), "bump action error")

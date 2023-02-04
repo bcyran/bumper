@@ -20,10 +20,10 @@ type checkActionResult struct {
 }
 
 func (result *checkActionResult) String() string {
-	if result.Status == ACTION_FAILED {
+	if result.Status == ActionFailedStatus {
 		return "?"
 	}
-	if result.Status == ACTION_SKIPPED {
+	if result.Status == ActionSkippedStatus {
 		return "-"
 	}
 	if result.cmpResult == 1 {
@@ -50,14 +50,14 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &checkActionResult{}
 
 	if pkg.IsVCS {
-		actionResult.Status = ACTION_SKIPPED
+		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
 
 	upstreamUrls := getPackageUrls(pkg)
 	upstreamVersion, err := action.tryGetUpstreamVersion(upstreamUrls)
 	if err != nil {
-		actionResult.Status = ACTION_FAILED
+		actionResult.Status = ActionFailedStatus
 		actionResult.Error = err
 		return actionResult
 	}
@@ -66,7 +66,7 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	pkg.UpstreamVersion = upstreamVersion
 	pkg.IsOutdated = cmpResult == 1
 
-	actionResult.Status = ACTION_SUCCESS
+	actionResult.Status = ActionSuccessStatus
 	actionResult.currentVersion = pkg.Pkgver
 	actionResult.upstreamVersion = upstreamVersion
 	actionResult.cmpResult = cmpResult
@@ -77,15 +77,15 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 // getPackageUrls extracts all relevant URLs from given package.
 // This includes both 'url' field and 'source' fields.
 func getPackageUrls(pkg *pack.Package) []string {
-	urls := []string{pkg.Url}
+	urls := []string{pkg.URL}
 
 	for _, sourceEntry := range pkg.Source {
 		// source entry might be in the form 'file.bar::https://path/to/file.bar'
-		_, sourceUrl, separatorFound := strings.Cut(sourceEntry, sourceSeparator)
+		_, sourceURL, separatorFound := strings.Cut(sourceEntry, sourceSeparator)
 		if !separatorFound {
-			sourceUrl = sourceEntry
+			sourceURL = sourceEntry
 		}
-		urls = append(urls, sourceUrl)
+		urls = append(urls, sourceURL)
 	}
 
 	return urls
@@ -110,9 +110,8 @@ func (action *CheckAction) tryGetUpstreamVersion(urls []string) (upstream.Versio
 		upstreamVersion, err := provider.LatestVersion()
 		if err == nil {
 			return upstreamVersion, nil
-		} else {
-			upstreamErrs = append(upstreamErrs, fmt.Errorf("upstream provider error: %w", err))
 		}
+		upstreamErrs = append(upstreamErrs, fmt.Errorf("upstream provider error: %w", err))
 	}
 
 	return upstream.Version(""), errors.Join(upstreamErrs...)

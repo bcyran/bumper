@@ -14,7 +14,7 @@ const newPkgrel = "pkgrel=1"
 
 var (
 	pkgrelPattern = regexp.MustCompile(`pkgrel=\d`)
-	bumpError     = errors.New("bump action error")
+	ErrBumpAction = errors.New("bump action error")
 )
 
 type bumpActionResult struct {
@@ -25,7 +25,7 @@ type bumpActionResult struct {
 }
 
 func (result *bumpActionResult) String() string {
-	if result.Status == ACTION_SKIPPED {
+	if result.Status == ActionSkippedStatus {
 		return ""
 	}
 	if !result.bumpOk {
@@ -52,38 +52,35 @@ func (action *BumpAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &bumpActionResult{}
 
 	if !pkg.IsOutdated {
-		actionResult.Status = ACTION_SKIPPED
+		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
 
 	if err := action.bump(pkg); err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", bumpError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: %w", ErrBumpAction, err)
 		actionResult.bumpOk = false
 		return actionResult
-	} else {
-		actionResult.bumpOk = true
 	}
+	actionResult.bumpOk = true
 
 	if err := action.updpkgsums(pkg); err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", bumpError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: %w", ErrBumpAction, err)
 		actionResult.updpkgsumsOk = false
 		return actionResult
-	} else {
-		actionResult.updpkgsumsOk = true
 	}
+	actionResult.updpkgsumsOk = true
 
 	if err := action.makepkg(pkg); err != nil {
-		actionResult.Status = ACTION_FAILED
-		actionResult.Error = fmt.Errorf("%w: %w", bumpError, err)
+		actionResult.Status = ActionFailedStatus
+		actionResult.Error = fmt.Errorf("%w: %w", ErrBumpAction, err)
 		actionResult.makepkgOk = false
 		return actionResult
-	} else {
-		actionResult.makepkgOk = true
 	}
+	actionResult.makepkgOk = true
 
-	actionResult.Status = ACTION_SUCCESS
+	actionResult.Status = ActionSuccessStatus
 
 	return actionResult
 }
