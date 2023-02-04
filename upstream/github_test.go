@@ -90,7 +90,6 @@ func TestGithubLatestVersion_Release(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, Version("1.6.9"), result)
-
 }
 
 func TestGithubLatestVersion_ReleaseWithApiKey(t *testing.T) {

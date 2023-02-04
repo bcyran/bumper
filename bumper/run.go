@@ -6,8 +6,10 @@ import (
 	"github.com/bcyran/bumper/pack"
 )
 
-type ResultHandler func(pkgIndex int, result ActionResult)
-type FinishedHandler func(pkgIndex int)
+type (
+	ResultHandler   func(pkgIndex int, result ActionResult)
+	FinishedHandler func(pkgIndex int)
+)
 
 // Run runs actions for the packages, blocks until all results are handled.
 // For each result, and on finished processing, appropriate handlers are called.
@@ -43,7 +45,7 @@ func runPackageActions(pkg *pack.Package, actions []Action, resultChan chan Acti
 
 		resultChan <- actionResult
 
-		if actionResult.GetStatus() != ACTION_SUCCESS  {
+		if actionResult.GetStatus() != ACTION_SUCCESS {
 			break
 		}
 	}

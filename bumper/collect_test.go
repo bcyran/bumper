@@ -46,7 +46,7 @@ func TestCollectPackages_Recursive(t *testing.T) {
 	createNamedPackage(filepath.Join(rootDir, "b"), "pack2")
 	createNamedPackage(filepath.Join(rootDir, "c/pack3"), "pack3")
 	createNamedPackage(filepath.Join(rootDir, "d/more/pack4"), "pack4")
-	ioutil.WriteFile(filepath.Join(rootDir, "random-file"), []byte("whatever"), 0644)
+	ioutil.WriteFile(filepath.Join(rootDir, "random-file"), []byte("whatever"), 0o644)
 
 	cases := map[int][]string{
 		0: {},
@@ -64,7 +64,7 @@ func TestCollectPackages_Recursive(t *testing.T) {
 
 func TestCollectPackages_Error(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "not-a-dir")
-	ioutil.WriteFile(filePath, []byte{}, 0644)
+	ioutil.WriteFile(filePath, []byte{}, 0o644)
 
 	cases := []int{0, 1}
 

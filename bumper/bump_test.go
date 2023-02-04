@@ -47,7 +47,7 @@ func TestBumpAction_Success(t *testing.T) {
 
 	// build our Package struct and write PKGBUILD
 	pkg := makeOutdatedPackage(t.TempDir(), versionBefore, pkgrelBefore, expectedVersion)
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString(versionBefore, pkgrelBefore)), 0644)
+	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString(versionBefore, pkgrelBefore)), 0o644)
 
 	// mock return values for two command runs
 	commandRetvals := []testutils.CommandRunnerRetval{
@@ -114,7 +114,7 @@ func TestBumpAction_FailBump(t *testing.T) {
 
 func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
+	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
 
 	expectedErr := "omg, updpkgsums failed"
 	commandRetvals := []testutils.CommandRunnerRetval{
@@ -133,7 +133,7 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 
 func TestBumpAction_FailMakepkg(t *testing.T) {
 	pkg := makeOutdatedPackage(t.TempDir(), "", "", "")
-	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0644)
+	os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
 
 	expectedErr := "oh no, poor makepkg error"
 	commandRetvals := []testutils.CommandRunnerRetval{

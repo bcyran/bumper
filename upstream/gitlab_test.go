@@ -122,6 +122,7 @@ func TestGitLabLatestVersion_ReleaseWithApiKey(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, Version("1.1.1"), result)
 }
+
 func TestGitLabLatestVersion_Tag(t *testing.T) {
 	defer gock.Off()
 	gock.New("https://gitLab.com").

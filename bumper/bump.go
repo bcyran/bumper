@@ -99,7 +99,7 @@ func (action *BumpAction) bump(pkg *pack.Package) error {
 	if pkg.Pkgrel != "1" {
 		updatedPkgbuild = pkgrelPattern.ReplaceAllString(updatedPkgbuild, newPkgrel)
 	}
-	err = os.WriteFile(pkg.PkgbuildPath(), []byte(updatedPkgbuild), 0644)
+	err = os.WriteFile(pkg.PkgbuildPath(), []byte(updatedPkgbuild), 0o644)
 	if err != nil {
 		return fmt.Errorf("PKGBUILD writing error: %w", err)
 	}
@@ -116,7 +116,7 @@ func (action *BumpAction) makepkg(pkg *pack.Package) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(pkg.SrcinfoPath(), srcinfo, 0644)
+	err = os.WriteFile(pkg.SrcinfoPath(), srcinfo, 0o644)
 	if err != nil {
 		return fmt.Errorf(".SRCINFO writing error: %w", err)
 	}

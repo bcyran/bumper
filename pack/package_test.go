@@ -86,7 +86,7 @@ func TestLoadPackage_PathNotDirectory(t *testing.T) {
 
 func TestLoadPackage_PathNoPkbuild(t *testing.T) {
 	noPkgbuildPath := filepath.Join(t.TempDir(), "directory")
-	os.Mkdir(noPkgbuildPath, 0755)
+	os.Mkdir(noPkgbuildPath, 0o755)
 
 	_, err := LoadPackage(noPkgbuildPath)
 
@@ -96,7 +96,7 @@ func TestLoadPackage_PathNoPkbuild(t *testing.T) {
 
 func TestLoadPackage_PathNoSrcinfo(t *testing.T) {
 	noSrcinfoPath := filepath.Join(t.TempDir(), "directory")
-	os.Mkdir(noSrcinfoPath, 0755)
+	os.Mkdir(noSrcinfoPath, 0o755)
 	os.Create(filepath.Join(noSrcinfoPath, "PKGBUILD"))
 
 	_, err := LoadPackage(noSrcinfoPath)

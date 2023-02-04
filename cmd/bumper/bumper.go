@@ -82,7 +82,6 @@ enables you to run bumper in a dir containing multiple package dirs.`,
 
 		actions := createActions(doActions, bumperConfig)
 		runBumper(workDir, actions)
-
 	},
 }
 

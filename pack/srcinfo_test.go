@@ -19,7 +19,7 @@ pkgbase = expected_base
 		source = https://fake.source
 		source = baz::https://foo.bar
 	`)
-	ioutil.WriteFile(srcinfoPath, srcinfoText, 0644)
+	ioutil.WriteFile(srcinfoPath, srcinfoText, 0o644)
 
 	parsedSrcinfo, err := ParseSrcinfo(srcinfoPath)
 
@@ -44,7 +44,7 @@ pkgbase = expected_base
         url = expected_url
         pkgrel = expected_rel
 	`)
-	ioutil.WriteFile(srcinfoPath, srcinfoText, 0644)
+	ioutil.WriteFile(srcinfoPath, srcinfoText, 0o644)
 
 	_, err := ParseSrcinfo(srcinfoPath)
 

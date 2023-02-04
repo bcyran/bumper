@@ -5,9 +5,7 @@ import (
 	"regexp"
 )
 
-var (
-	pypiPackageRegex = regexp.MustCompile(`(files\.pythonhosted\.org|pypi\.python.org|pypi\.org|pypi\.io)/packages/source/[a-z]{1}/([^/#?]+)/`)
-)
+var pypiPackageRegex = regexp.MustCompile(`(files\.pythonhosted\.org|pypi\.python.org|pypi\.org|pypi\.io)/packages/source/[a-z]{1}/([^/#?]+)/`)
 
 type pypiProvider struct {
 	packageName string

@@ -77,7 +77,7 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 // getPackageUrls extracts all relevant URLs from given package.
 // This includes both 'url' field and 'source' fields.
 func getPackageUrls(pkg *pack.Package) []string {
-	var urls = []string{pkg.Url}
+	urls := []string{pkg.Url}
 
 	for _, sourceEntry := range pkg.Source {
 		// source entry might be in the form 'file.bar::https://path/to/file.bar'

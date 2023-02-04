@@ -12,9 +12,9 @@ import (
 
 func TestReadConfig_PathOk(t *testing.T) {
 	bumperConfigDirPath := filepath.Join(t.TempDir(), "some/non-standard/dir")
-	os.MkdirAll(bumperConfigDirPath, 0755)
+	os.MkdirAll(bumperConfigDirPath, 0o755)
 	configPath := filepath.Join(bumperConfigDirPath, "config.yaml")
-	err := ioutil.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0644)
+	err := ioutil.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0o644)
 
 	actualConfig, err := ReadConfig(configPath)
 
@@ -33,9 +33,9 @@ func TestReadConfig_DefaultOk(t *testing.T) {
 	configDirPath := filepath.Join(t.TempDir(), "config")
 	t.Setenv("XDG_CONFIG_HOME", configDirPath)
 	bumperConfigDirPath := filepath.Join(configDirPath, "bumper")
-	os.MkdirAll(bumperConfigDirPath, 0755)
+	os.MkdirAll(bumperConfigDirPath, 0o755)
 	configPath := filepath.Join(bumperConfigDirPath, "config.yaml")
-	err := ioutil.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0644)
+	err := ioutil.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0o644)
 
 	actualConfig, err := ReadConfig("")
 
