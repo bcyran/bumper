@@ -1,6 +1,8 @@
 # bumper
 [![CI](https://github.com/bcyran/bumper/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/bcyran/bumper/actions/workflows/test.yml)
 [![codecov](https://codecov.io/github/bcyran/bumper/branch/master/graph/badge.svg?token=GCRN2996B0)](https://codecov.io/github/bcyran/bumper)
+[![GitHub release](https://img.shields.io/github/v/release/bcyran/bumper)](https://github.com/bcyran/bumper/releases/latest)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bcyran/bumper.svg)](https://pkg.go.dev/github.com/bcyran/bumper)
 [![license](https://img.shields.io/github/license/bcyran/bumper)](https://github.com/bcyran/bumper/blob/master/LICENSE)
 
 Helper for AUR package maintainers to easily bump `$pkgver` in their packages.
