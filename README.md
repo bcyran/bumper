@@ -5,7 +5,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/bcyran/bumper.svg)](https://pkg.go.dev/github.com/bcyran/bumper)
 [![license](https://img.shields.io/github/license/bcyran/bumper)](https://github.com/bcyran/bumper/blob/master/LICENSE)
 
-Helper for AUR package maintainers to easily bump `$pkgver` in their packages.
+Helper for [Arch Linux User Repository](https://aur.archlinux.org/) (AUR) package maintainers to easily bump `$pkgver` in their packages.
 
 ![bumper demo gif](./demo.gif)
 
