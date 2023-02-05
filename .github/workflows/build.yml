@@ -34,7 +34,7 @@ jobs:
           echo "BINARY_NAME=${BINARY_NAME}" >> ${GITHUB_ENV}
 
       - name: Build the binary
-        run: go build -o "${BINARY_DIR}/${BINARY_NAME}" -v
+        run: go build -ldflags '-s -w' -v -o "${BINARY_DIR}/${BINARY_NAME}"
 
       - name: Determine binary version
         run: |
