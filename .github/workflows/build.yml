@@ -1,0 +1,72 @@
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos:
+          - linux
+        goarch:
+          - amd64
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: stable
+      
+      - name: Prepare build env
+        run: |
+          BINARY_DIR="out"
+          BINARY_NAME="bumper"
+          mkdir -p "${BINARY_DIR}"
+          echo "GOOS=${{matrix.goos}}" >> ${GITHUB_ENV}
+          echo "GOARCH=${{matrix.goarch}}" >> ${GITHUB_ENV}
+          echo "BINARY_DIR=${BINARY_DIR}" >> ${GITHUB_ENV}
+          echo "BINARY_NAME=${BINARY_NAME}" >> ${GITHUB_ENV}
+
+      - name: Build the binary
+        run: go build -o "${BINARY_DIR}/${BINARY_NAME}" -v
+
+      - name: Build the archive artifact
+        run: |
+          if [[ "${GITHUB_REF}" =~ ^refs/tags/ ]]; then
+            BINARY_VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            BINARY_VERSION=$(git rev-parse --short HEAD)
+          fi
+          PKG_NAME="${BINARY_NAME}-${BINARY_VERSION}-${GOOS}-${GOARCH}"
+          PKG_STAGING="${PWD}/${PKG_NAME}"
+          mkdir -p "${PKG_STAGING}"
+
+          cp "${BINARY_DIR}/${BINARY_NAME}" "${PKG_STAGING}"
+          cp {README.md,LICENSE} "${PKG_STAGING}"
+
+          PKG_ARTIFACT_NAME="${PKG_NAME}.tar.gz"
+          PKG_ARTIFACT_PATH="${PWD}/${PKG_ARTIFACT_NAME}"
+          cd "${PKG_STAGING}"
+          tar -czf "${PKG_ARTIFACT_PATH}" *
+
+          echo "PKG_ARTIFACT_NAME=${PKG_ARTIFACT_NAME}" >> ${GITHUB_ENV}
+          echo "PKG_ARTIFACT_PATH=${PKG_ARTIFACT_PATH}" >> ${GITHUB_ENV}
+
+      - name: Upload the artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.PKG_ARTIFACT_NAME }}
+          path: ${{ env.PKG_ARTIFACT_PATH }}
+
+      - name: Release the artifact
+        uses: softprops/action-gh-release@v1
+        if: startswith(github.ref, 'regs/tags/')
+        with:
+          draft: true
+          files: ${{ env.PKG_ARTIFACT_PATH }}
