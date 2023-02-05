@@ -22,8 +22,16 @@ Running `bumper` in this dir will find the packages in subdirectories and perfor
 Nothing will be committed or pushed in case of `make` or any other action failure.
 
 ## Installation
+### AUR
+AUR packages are available: [bumper](https://aur.archlinux.org/packages/bumper) and [bumper-bin](https://aur.archlinux.org/packages/bumper-bin).
+
+### Binary
+You can download tarball containing the latest prebuilt binary from the [releases page](https://github.com/bcyran/bumper/releases).
+The binary named `bumper` has to be placed in directory in your `$PATH`, e.g. `/usr/local/bin`.
+
+### Go
 ```
-go get github.com/bcyran/bumper
+go install github.com/bcyran/bumper@latest
 ```
 
 ## Usage
