@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build-release:
@@ -39,7 +39,7 @@ jobs:
       - name: Determine binary version
         run: |
           if [[ "${GITHUB_REF}" =~ ^refs/tags/ ]]; then
-            BINARY_VERSION="${GITHUB_REF#refs/tags/}"
+            BINARY_VERSION="${GITHUB_REF#refs/tags/v}"
           else
             BINARY_VERSION=$(git rev-parse --short HEAD)
           fi
@@ -81,7 +81,7 @@ jobs:
 
       - name: Release the artifact
         uses: softprops/action-gh-release@v1
-        if: startswith(github.ref, 'regs/tags/')
+        if: startswith(github.ref, 'refs/tags/')
         with:
           draft: true
           files: ${{ env.PKG_ARTIFACT_PATH }}
