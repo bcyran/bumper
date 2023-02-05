@@ -58,6 +58,7 @@ cd /home/user/workspace/aur/package1 && bumper
 | `--push`/`-p`    | `false`                                                                   | Push commited changes.                                                                                           |
 | `--config`       | `$XDG_CONFIG_HOME/bumper/config.yaml`, `$HOME/.config/bumper/config.yaml` | Configuration file path. See [configuration section](#configuration).                                            |
 | `--depth`/`-d`   | `1`                                                                       | Depth of directory tree recursion when looking for packages. By default checks given directory and its children. |
+| `--completion`   | -                                                                         | Generate and print shell completion script. Available: bash, zsh, fish.                                          |
 | `--version`/`-v` | -                                                                         | Print version and exit.                                                                                          |
 | `--help`/`-h`    | -                                                                         | Print help and exit.                                                                                             |
 

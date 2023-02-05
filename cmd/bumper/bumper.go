@@ -30,6 +30,7 @@ var (
 	}
 	collectDepth = 1
 	configPath   = ""
+	completion   = ""
 )
 
 var bumperCmd = &cobra.Command{
@@ -57,6 +58,11 @@ enables you to run bumper in a dir containing multiple package dirs.`,
   bumper ~/workspace/aur/my-package     bump single package`,
 	Version: "0.1.0",
 	Run: func(cmd *cobra.Command, args []string) {
+		if completion != "" {
+			generateCompletion(cmd, completion)
+			os.Exit(0)
+		}
+
 		var workDir string
 		switch len(args) {
 		case 0:
@@ -83,6 +89,9 @@ enables you to run bumper in a dir containing multiple package dirs.`,
 		actions := createActions(doActions, bumperConfig)
 		runBumper(workDir, actions)
 	},
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return nil, cobra.ShellCompDirectiveFilterDirs
+	},
 }
 
 func init() {
@@ -92,6 +101,10 @@ func init() {
 	bumperCmd.Flags().BoolVarP(&doActions.push, "push", "p", false, "push committed changes")
 	bumperCmd.Flags().IntVarP(&collectDepth, "depth", "d", 1, "depth of dir recursion in search for packages")
 	bumperCmd.Flags().StringVarP(&configPath, "config", "", "", "path to configuration file")
+	bumperCmd.Flags().StringVarP(&completion, "completion", "", "", "generate completion for shell: bash, zsh, fish")
+	bumperCmd.RegisterFlagCompletionFunc("completion", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) { //nolint:errcheck
+		return []string{"bash", "zsh", "fish"}, cobra.ShellCompDirectiveDefault
+	})
 }
 
 func createActions(doActions DoActions, bumperConfig config.Provider) []bumper.Action {
@@ -168,6 +181,25 @@ func runBumper(workDir string, actions []bumper.Action) {
 	wg.Wait()
 	if !ttyOutput {
 		pkgListDisplay.Display(os.Stdout)
+	}
+}
+
+func generateCompletion(cmd *cobra.Command, shell string) {
+	var err error
+	switch shell {
+	case "bash":
+		err = cmd.Root().GenBashCompletion(os.Stdout)
+	case "zsh":
+		err = cmd.Root().GenZshCompletion(os.Stdout)
+	case "fish":
+		err = cmd.Root().GenFishCompletion(os.Stdout, true)
+	default:
+		fmt.Printf("invalid shell name '%s', allowed: bash, zsh, fish.\n", shell)
+		os.Exit(1)
+	}
+	if err != nil {
+		fmt.Printf("completion generation failed: %v\n", err)
+		os.Exit(1)
 	}
 }
 
