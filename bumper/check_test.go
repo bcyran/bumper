@@ -51,7 +51,7 @@ func TestCheckAction_Success(t *testing.T) {
 
 	// result assertions
 	assert.Equal(t, ActionSuccessStatus, result.GetStatus())
-	assert.Equal(t, "1.0.0 -> 2.0.0", result.String())
+	assert.Equal(t, "1.0.0 → 2.0.0", result.String())
 	// package assertions
 	assert.Equal(t, upstream.Version("2.0.0"), pkg.UpstreamVersion)
 	assert.True(t, pkg.IsOutdated)
@@ -127,7 +127,7 @@ func TestCheckActionResult_String(t *testing.T) {
 			currentVersion:   pack.Version("curr"),
 			upstreamVersion:  upstream.Version("upstr"),
 			cmpResult:        1,
-		}: "curr -> upstr",
+		}: "curr → upstr",
 		{
 			BaseActionResult: BaseActionResult{Status: ActionSuccessStatus},
 			currentVersion:   pack.Version("curr"),

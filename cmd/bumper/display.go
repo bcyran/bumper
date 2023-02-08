@@ -101,7 +101,7 @@ func (pkgDisplay *PackageDisplay) String() string {
 		}
 	} else {
 		bullet = progressColor(spinnerFrames[pkgDisplay.spinnerFrame])
-		resultsStrings = append(resultsStrings, "...")
+		resultsStrings = append(resultsStrings, "…")
 	}
 	pkgDisplay.mtx.RUnlock()
 
