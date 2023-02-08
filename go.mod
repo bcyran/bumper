@@ -6,7 +6,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/gosuri/uilive v0.0.4
 	github.com/h2non/gock v1.2.0
-	github.com/mattn/go-isatty v0.0.14
+	github.com/mattn/go-isatty v0.0.17
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	go.uber.org/config v1.4.0
@@ -24,7 +24,7 @@ require (
 	go.uber.org/multierr v1.4.0 // indirect
 	go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee // indirect
 	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
-	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/tools v0.0.0-20191104232314-dc038396d1f0 // indirect
 	gopkg.in/yaml.v2 v2.2.5 // indirect
