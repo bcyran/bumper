@@ -60,12 +60,19 @@ func TestCheckAction_Success(t *testing.T) {
 func TestCheckAction_Skip(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider { return nil }
 	action := NewCheckAction(verProvFactory, emptyConfig)
-	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}, IsVCS: true}
+	pkg := pack.Package{
+		Srcinfo: &pack.Srcinfo{
+			URL: "foo", FullVersion: &pack.FullVersion{
+				Pkgver: pack.Version("1.2.r3.45"),
+			},
+		},
+		IsVCS: true,
+	}
 
 	result := action.Execute(&pkg)
 
 	assert.Equal(t, ActionSkippedStatus, result.GetStatus())
-	assert.Equal(t, "-", result.String())
+	assert.Equal(t, "1.2.r3.45", result.String())
 }
 
 func TestCheckAction_FailNoProvider(t *testing.T) {

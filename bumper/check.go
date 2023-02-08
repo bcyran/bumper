@@ -24,7 +24,7 @@ func (result *checkActionResult) String() string {
 		return "?"
 	}
 	if result.Status == ActionSkippedStatus {
-		return "-"
+		return result.currentVersion.GetVersionStr()
 	}
 	if result.cmpResult == 1 {
 		return fmt.Sprintf("%s → %s", result.currentVersion, result.upstreamVersion)
@@ -50,6 +50,7 @@ func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &checkActionResult{}
 
 	if pkg.IsVCS {
+		actionResult.currentVersion = pkg.Pkgver
 		actionResult.Status = ActionSkippedStatus
 		return actionResult
 	}
