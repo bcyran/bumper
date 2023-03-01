@@ -8,7 +8,7 @@ require (
 	github.com/h2non/gock v1.2.0
 	github.com/mattn/go-isatty v0.0.17
 	github.com/spf13/cobra v1.6.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	go.uber.org/config v1.4.0
 )
 
