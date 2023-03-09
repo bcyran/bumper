@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	configProvider, _ = config.NewYAML(config.Source(strings.NewReader("{empty: {}, check: {providers: {version: 2.0.0}}}")))
-	emptyConfig       = configProvider.Get("empty")
-	configWithVersion = configProvider.Get("check")
+	checkConfigProvider, _ = config.NewYAML(config.Source(strings.NewReader("{empty: {}, check: {providers: {version: 2.0.0}}}")))
+	emptyCheckConfig       = checkConfigProvider.Get("empty")
+	checkConfigWithVersion = checkConfigProvider.Get("check")
 )
 
 type fakeVersionProvider struct {
@@ -37,7 +37,7 @@ func TestCheckAction_Success(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
 		return &fakeVersionProvider{version: providersConfig.Get("version").String()}
 	}
-	action := NewCheckAction(verProvFactory, configWithVersion)
+	action := NewCheckAction(verProvFactory, checkConfigWithVersion)
 	pkg := pack.Package{
 		Srcinfo: &pack.Srcinfo{
 			URL: "foo",
@@ -59,7 +59,7 @@ func TestCheckAction_Success(t *testing.T) {
 
 func TestCheckAction_Skip(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider { return nil }
-	action := NewCheckAction(verProvFactory, emptyConfig)
+	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{
 		Srcinfo: &pack.Srcinfo{
 			URL: "foo", FullVersion: &pack.FullVersion{
@@ -77,7 +77,7 @@ func TestCheckAction_Skip(t *testing.T) {
 
 func TestCheckAction_FailNoProvider(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider { return nil }
-	action := NewCheckAction(verProvFactory, emptyConfig)
+	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}}
 
 	result := action.Execute(&pkg)
@@ -92,7 +92,7 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
 		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
-	action := NewCheckAction(verProvFactory, emptyConfig)
+	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}}
 
 	result := action.Execute(&pkg)
@@ -109,7 +109,7 @@ func TestCheckAction_FailChecksMultipleURLs(t *testing.T) {
 		checkedURLs = append(checkedURLs, url)
 		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
-	action := NewCheckAction(verProvFactory, emptyConfig)
+	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{
 		Srcinfo: &pack.Srcinfo{
 			URL:    "first.url",

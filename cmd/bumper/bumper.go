@@ -123,7 +123,7 @@ func createActions(doActions DoActions, bumperConfig config.Provider) []bumper.A
 	}
 
 	if doActions.commit {
-		actions = append(actions, bumper.NewCommitAction(bumper.ExecCommand))
+		actions = append(actions, bumper.NewCommitAction(bumper.ExecCommand, bumperConfig.Get("commit")))
 	} else {
 		return actions
 	}

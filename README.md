@@ -77,6 +77,8 @@ APIs used to retrieve the upstream versions can have some limitations for unauth
 GitHub and GitLab APIs in particular use rate limiting, so requests made by `bumper` could fail after a few usages or when bumping a lot of packages.
 You can configure `bumper` to use your API keys to avoid those limits.
 
+It's also possible to configure the value used as the commit author.
+
 Configuration file is expected to be present at `$XDG_CONFIG_HOME/bumper/config.yaml` or `$HOME/.config/bumper/config.yaml`.
 The format is as follows:
 ```yaml
@@ -88,6 +90,8 @@ check:
       apiKeys:
         gitlab.com: gitlab_com_api_key
         other.gitlab.instance: other_api_key
+commit:
+  author: John Doe <john.doe@example.com>
 ```
 **Warning**: All configuration fields are optional and the file isn't checked for additional keys!
 This means that `bumper` will not fail if you make a typo or other mistake.
