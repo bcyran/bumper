@@ -15,7 +15,7 @@ func TestParseVersion_Valid(t *testing.T) {
 	}
 
 	for rawVersion, expectedResult := range cases {
-		result, valid := parseVersion(rawVersion)
+		result, valid := ParseVersion(rawVersion)
 
 		assert.True(t, valid)
 		assert.Equal(t, expectedResult, result)
@@ -32,7 +32,7 @@ func TestParseVersion_Invalid(t *testing.T) {
 	}
 
 	for _, rawVersion := range cases {
-		_, valid := parseVersion(rawVersion)
+		_, valid := ParseVersion(rawVersion)
 
 		assert.False(t, valid)
 	}

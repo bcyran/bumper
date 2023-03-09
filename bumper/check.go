@@ -10,6 +10,8 @@ import (
 	"go.uber.org/config"
 )
 
+var ErrCheckAction = errors.New("check action error")
+
 const sourceSeparator = "::"
 
 type checkActionResult struct {
@@ -49,18 +51,34 @@ func NewCheckAction(versionProviderFactory versionProviderFactory, checkConfig c
 func (action *CheckAction) Execute(pkg *pack.Package) ActionResult {
 	actionResult := &checkActionResult{}
 
-	if pkg.IsVCS {
-		actionResult.currentVersion = pkg.Pkgver
-		actionResult.Status = ActionSkippedStatus
-		return actionResult
-	}
+	var upstreamVersion upstream.Version
 
-	upstreamUrls := getPackageUrls(pkg)
-	upstreamVersion, err := action.tryGetUpstreamVersion(upstreamUrls)
-	if err != nil {
-		actionResult.Status = ActionFailedStatus
-		actionResult.Error = err
-		return actionResult
+	var pkgVersionOverride string
+	action.checkConfig.Get("versionOverrides").Get(pkg.Pkgbase).Populate(&pkgVersionOverride) // nolint:errcheck
+
+	if pkgVersionOverride != "" {
+		var isValid bool
+		upstreamVersion, isValid = upstream.ParseVersion(pkgVersionOverride)
+		if !isValid {
+			actionResult.Status = ActionFailedStatus
+			actionResult.Error = fmt.Errorf("%w: version override '%s' is not a valid version", ErrCheckAction, pkgVersionOverride)
+			return actionResult
+		}
+	} else {
+		if pkg.IsVCS {
+			actionResult.currentVersion = pkg.Pkgver
+			actionResult.Status = ActionSkippedStatus
+			return actionResult
+		}
+
+		upstreamUrls := getPackageUrls(pkg)
+		var err error
+		upstreamVersion, err = action.tryGetUpstreamVersion(upstreamUrls)
+		if err != nil {
+			actionResult.Status = ActionFailedStatus
+			actionResult.Error = err
+			return actionResult
+		}
 	}
 
 	cmpResult := pack.VersionCmp(upstreamVersion, pkg.Pkgver)
