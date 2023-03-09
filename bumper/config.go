@@ -21,7 +21,7 @@ var (
 
 // ReadConfig reads config at the given path, or at the default location
 // if the path is empty.
-func ReadConfig(requestedPath string) (config.Provider, error) {
+func ReadConfig(requestedPath string, overrides ...config.YAMLOption) (config.Provider, error) {
 	var configPath string
 
 	if requestedPath != "" {
@@ -42,7 +42,10 @@ func ReadConfig(requestedPath string) (config.Provider, error) {
 		configPath = defaultPath
 	}
 
-	return config.NewYAML(config.File(configPath))
+	configSources := []config.YAMLOption{config.File(configPath)}
+	configSources = append(configSources, overrides...)
+
+	return config.NewYAML(configSources...)
 }
 
 func getConfigPath() (string, error) {

@@ -28,9 +28,10 @@ var (
 		commit: true,
 		push:   false,
 	}
-	collectDepth = 1
-	configPath   = ""
-	completion   = ""
+	collectDepth     = 1
+	configPath       = ""
+	completion       = ""
+	versionOverrides = []string{}
 )
 
 var bumperCmd = &cobra.Command{
@@ -53,6 +54,7 @@ Packages are searched recursively starting in the given dir (current working
 directory by default if no dir is given). Default recursion depth is 1 which
 enables you to run bumper in a dir containing multiple package dirs.`,
 	Example: `  bumper                                find and bump packages in $PWD
+  bumper --override my-package=1.2.3    override my-package version to 1.2.3
   bumper --bump=false                   find packages, check updates in $PWD
   bumper ~/workspace/aur                find and bump packages in given dir
   bumper ~/workspace/aur/my-package     bump single package`,
@@ -80,7 +82,13 @@ enables you to run bumper in a dir containing multiple package dirs.`,
 			os.Exit(1)
 		}
 
-		bumperConfig, err := bumper.ReadConfig(configPath)
+		bumperCLIConfig, err := configFromVersionOverrides(versionOverrides)
+		if err != nil {
+			fmt.Printf("Fatal error, invalid CLI option: %v.\n", err)
+			os.Exit(1)
+		}
+
+		bumperConfig, err := bumper.ReadConfig(configPath, bumperCLIConfig)
 		if err != nil {
 			fmt.Printf("Fatal error, invalid config: %v.\n", err)
 			os.Exit(1)
@@ -102,6 +110,7 @@ func init() {
 	bumperCmd.Flags().IntVarP(&collectDepth, "depth", "d", 1, "depth of dir recursion in search for packages")
 	bumperCmd.Flags().StringVarP(&configPath, "config", "", "", "path to configuration file")
 	bumperCmd.Flags().StringVarP(&completion, "completion", "", "", "generate completion for shell: bash, zsh, fish")
+	bumperCmd.Flags().StringArrayVarP(&versionOverrides, "override", "o", []string{}, "override upstream version, format: package=version")
 	bumperCmd.RegisterFlagCompletionFunc("completion", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) { //nolint:errcheck
 		return []string{"bash", "zsh", "fish"}, cobra.ShellCompDirectiveDefault
 	})
