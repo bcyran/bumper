@@ -12,9 +12,18 @@ import (
 )
 
 var (
-	checkConfigProvider, _ = config.NewYAML(config.Source(strings.NewReader("{empty: {}, check: {providers: {version: 2.0.0}}}")))
-	emptyCheckConfig       = checkConfigProvider.Get("empty")
-	checkConfigWithVersion = checkConfigProvider.Get("check")
+	versionOverride        = "4.2.0"
+	invalidVersionOverride = "whatever"
+
+	fakeVersionCheckConfigProvider, _ = config.NewYAML(config.Source(strings.NewReader("{empty: {}, check: {providers: {fakeVersionProvider: 2.0.0}}}")))
+	emptyCheckConfig                  = fakeVersionCheckConfigProvider.Get("empty")
+	fakeVersionCheckConfig            = fakeVersionCheckConfigProvider.Get("check")
+
+	versionOverrideCheckConfigProvider, _ = config.NewYAML(config.Source(strings.NewReader(fmt.Sprintf("{check: {versionOverrides: {foopkg: %s}}}", versionOverride))))
+	versionOverrideCheckConfig            = versionOverrideCheckConfigProvider.Get("check")
+
+	invalidOverrideCheckConfigProvider, _ = config.NewYAML(config.Source(strings.NewReader(fmt.Sprintf("{check: {versionOverrides: {foopkg: %s}}}", invalidVersionOverride))))
+	invalidVersionOverrideCheckConfig     = invalidOverrideCheckConfigProvider.Get("check")
 )
 
 type fakeVersionProvider struct {
@@ -35,9 +44,9 @@ func (provider *fakeVersionProvider) Equal(other interface{}) bool {
 
 func TestCheckAction_Success(t *testing.T) {
 	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
-		return &fakeVersionProvider{version: providersConfig.Get("version").String()}
+		return &fakeVersionProvider{version: providersConfig.Get("fakeVersionProvider").String()}
 	}
-	action := NewCheckAction(verProvFactory, checkConfigWithVersion)
+	action := NewCheckAction(verProvFactory, fakeVersionCheckConfig)
 	pkg := pack.Package{
 		Srcinfo: &pack.Srcinfo{
 			URL: "foo",
@@ -54,6 +63,32 @@ func TestCheckAction_Success(t *testing.T) {
 	assert.Equal(t, "1.0.0 → 2.0.0", result.String())
 	// package assertions
 	assert.Equal(t, upstream.Version("2.0.0"), pkg.UpstreamVersion)
+	assert.True(t, pkg.IsOutdated)
+}
+
+func TestCheckAction_SuccessVersionOverride(t *testing.T) {
+	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
+		t.Error("provider should not be called when version override provided")
+		return nil
+	}
+	action := NewCheckAction(verProvFactory, versionOverrideCheckConfig)
+	pkg := pack.Package{
+		Srcinfo: &pack.Srcinfo{
+			Pkgbase: "foopkg",
+			URL:     "foo",
+			FullVersion: &pack.FullVersion{
+				Pkgver: pack.Version("1.0.0"),
+			},
+		},
+	}
+
+	result := action.Execute(&pkg)
+
+	// result assertions
+	assert.Equal(t, ActionSuccessStatus, result.GetStatus())
+	assert.Equal(t, fmt.Sprintf("1.0.0 → %s", versionOverride), result.String())
+	// package assertions
+	assert.Equal(t, upstream.Version(versionOverride), pkg.UpstreamVersion)
 	assert.True(t, pkg.IsOutdated)
 }
 
@@ -125,6 +160,30 @@ func TestCheckAction_FailChecksMultipleURLs(t *testing.T) {
 	assert.Equal(t, ActionFailedStatus, result.GetStatus())
 	assert.Equal(t, "?", result.String())
 	assert.ErrorContains(t, result.GetError(), expectedErr)
+}
+
+func TestCheckAction_FailInvalidVersionOverride(t *testing.T) {
+	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
+		t.Error("provider should not be called when version override provided")
+		return nil
+	}
+	action := NewCheckAction(verProvFactory, invalidVersionOverrideCheckConfig)
+	pkg := pack.Package{
+		Srcinfo: &pack.Srcinfo{
+			Pkgbase: "foopkg",
+			URL:     "foo",
+			FullVersion: &pack.FullVersion{
+				Pkgver: pack.Version("1.0.0"),
+			},
+		},
+	}
+
+	result := action.Execute(&pkg)
+
+	// result assertions
+	assert.Equal(t, ActionFailedStatus, result.GetStatus())
+	assert.Equal(t, "?", result.String())
+	assert.ErrorContains(t, result.GetError(), fmt.Sprintf("version override '%s' is not a valid version", invalidVersionOverride))
 }
 
 func TestCheckActionResult_String(t *testing.T) {

@@ -16,9 +16,9 @@ func (v Version) GetVersionStr() string {
 
 var versionRegexp = regexp.MustCompile(`^[\w.]+$`)
 
-// parseVersion makes Version from a string.
+// ParseVersion makes Version from a string.
 // If the string cannot be interpreted as a Version, returns nil.
-func parseVersion(rawVersion string) (Version, bool) {
+func ParseVersion(rawVersion string) (Version, bool) {
 	if !containsDigit(rawVersion) {
 		return Version(""), false
 	}

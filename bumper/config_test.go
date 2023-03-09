@@ -11,18 +11,21 @@ import (
 )
 
 func TestReadConfig_PathOk(t *testing.T) {
+	override := config.Static(map[string]string{"override": "yes!"})
+
 	bumperConfigDirPath := filepath.Join(t.TempDir(), "some/non-standard/dir")
 	err := os.MkdirAll(bumperConfigDirPath, 0o755)
 	require.Nil(t, err)
 	configPath := filepath.Join(bumperConfigDirPath, "config.yaml")
-	err = os.WriteFile(configPath, []byte("providers: {test_key: test_value}"), 0o644)
+	err = os.WriteFile(configPath, []byte("{providers: {test_key: test_value}, override: no}"), 0o644)
 	require.Nil(t, err)
 
-	actualConfig, err := ReadConfig(configPath)
+	actualConfig, err := ReadConfig(configPath, override)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, actualConfig)
 	assert.Equal(t, "test_value", actualConfig.Get("providers.test_key").String())
+	assert.Equal(t, "yes!", actualConfig.Get("override").String())
 }
 
 func TestReadConfig_PathNoConfig(t *testing.T) {
