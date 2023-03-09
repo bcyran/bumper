@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bcyran/bumper/pack"
+	"go.uber.org/config"
 )
 
 const expectedGitStatus = " M .SRCINFO\x00 M PKGBUILD\x00"
@@ -27,10 +28,11 @@ func (result *commitActionResult) String() string {
 
 type CommitAction struct {
 	commandRunner CommandRunner
+	commitConfig  config.Value
 }
 
-func NewCommitAction(commandRunner CommandRunner) *CommitAction {
-	return &CommitAction{commandRunner: commandRunner}
+func NewCommitAction(commandRunner CommandRunner, commitConfig config.Value) *CommitAction {
+	return &CommitAction{commandRunner: commandRunner, commitConfig: commitConfig}
 }
 
 func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
@@ -86,6 +88,14 @@ func (action *CommitAction) commit(pkg *pack.Package) error {
 	}
 
 	commitMessage := fmt.Sprintf("Bump version to %s", pkg.UpstreamVersion)
-	_, err = action.commandRunner(pkg.Path, "git", "commit", "--message", commitMessage)
+	commitArgs := []string{"commit", "--message", commitMessage}
+
+	var commitAuthor string
+	action.commitConfig.Get("author").Populate(&commitAuthor) // nolint:errcheck
+	if commitAuthor != "" {
+		commitArgs = append(commitArgs, "--author", commitAuthor)
+	}
+
+	_, err = action.commandRunner(pkg.Path, "git", commitArgs...)
 	return err
 }
