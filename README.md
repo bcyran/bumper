@@ -60,17 +60,18 @@ cd /home/user/workspace/aur/package1 && bumper
 ```
 
 ### Options
-| CLI option       | Default                                                                   | Description                                                                                                      |
-| ------------     | ---------                                                                 | -------------                                                                                                    |
-| `--bump`/`-b`    | `true`                                                                    | Bump outdated packages. If disabled, `bumper` will only check for updates.                                       |
-| `--make`/`-m`    | `true`                                                                    | Build the package after bumping and before commiting.                                                            |
-| `--commit`/`-c`  | `true`                                                                    | Commit made changes. Disabling commit disables push as well.                                                     |
-| `--push`/`-p`    | `false`                                                                   | Push commited changes.                                                                                           |
-| `--config`       | `$XDG_CONFIG_HOME/bumper/config.yaml`, `$HOME/.config/bumper/config.yaml` | Configuration file path. See [configuration section](#configuration).                                            |
-| `--depth`/`-d`   | `1`                                                                       | Depth of directory tree recursion when looking for packages. By default checks given directory and its children. |
-| `--completion`   | -                                                                         | Generate and print shell completion script. Available: bash, zsh, fish.                                          |
-| `--version`/`-v` | -                                                                         | Print version and exit.                                                                                          |
-| `--help`/`-h`    | -                                                                         | Print help and exit.                                                                                             |
+| CLI option | Default | Description |
+| ---------- | ------- | ----------- |
+| `--bump`/`-b` | `true` | Bump outdated packages. If disabled, `bumper` will only check for updates. |
+| `--make`/`-m` | `true` | Build the package after bumping and before commiting. |
+| `--commit`/`-c` | `true` | Commit made changes. Disabling commit disables push as well. |
+| `--push`/`-p` | `false` | Push commited changes. |
+| `--config` | `$XDG_CONFIG_HOME/bumper/config.yaml`, `$HOME/.config/bumper/config.yaml` | Configuration file path. See [configuration section](#configuration). |
+| `--depth`/`-d` | `1` | Depth of directory tree recursion when looking for packages. By default checks given directory and its children. |
+| `--override`/`-o` | - | Override version for specified packages, e.g.: `-o mypackage=1.2.3`. This skips upstream check completely. Can be used multiple times for multiple overrides. |
+| `--completion` | - | Generate and print shell completion script. Available: bash, zsh, fish. |
+| `--version`/`-v` | - | Print version and exit. |
+| `--help`/`-h` | - | Print help and exit. |
 
 ### Configuration
 APIs used to retrieve the upstream versions can have some limitations for unauthorized access.
