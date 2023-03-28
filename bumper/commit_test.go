@@ -44,7 +44,7 @@ func TestCommitAction_Success(t *testing.T) {
 
 	// expect valid git status command
 	expectedStatusCommand := testutils.CommandRunnerParams{
-		Cwd: pkg.Path, Command: "git", Args: []string{"status", "--porcelain", "--null"},
+		Cwd: pkg.Path, Command: "git", Args: []string{"status", "--porcelain", "--null", "--untracked-files=no"},
 	}
 	assert.Equal(t, expectedStatusCommand, (*commandRuns)[0])
 

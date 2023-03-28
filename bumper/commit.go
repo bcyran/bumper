@@ -65,7 +65,7 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 }
 
 func (action *CommitAction) isChanged(pkg *pack.Package) (bool, error) {
-	gitStatus, err := action.commandRunner(pkg.Path, "git", "status", "--porcelain", "--null")
+	gitStatus, err := action.commandRunner(pkg.Path, "git", "status", "--porcelain", "--null", "--untracked-files=no")
 	if err != nil {
 		return false, err
 	}
