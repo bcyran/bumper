@@ -38,7 +38,7 @@ func (provider *fakeVersionProvider) LatestVersion() (upstream.Version, error) {
 	return upstream.Version(provider.version), nil
 }
 
-func (provider *fakeVersionProvider) Equal(other interface{}) bool {
+func (provider *fakeVersionProvider) Equal(_ interface{}) bool {
 	return false
 }
 
