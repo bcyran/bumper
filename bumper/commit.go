@@ -46,7 +46,7 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 	isChanged, err := action.isChanged(pkg)
 	if err != nil {
 		actionResult.Status = ActionFailedStatus
-		actionResult.Error = fmt.Errorf("%w %w", ErrCommitAction, err)
+		actionResult.Error = fmt.Errorf("%w: %w", ErrCommitAction, err)
 		return actionResult
 	}
 	if !isChanged {
@@ -56,7 +56,7 @@ func (action *CommitAction) Execute(pkg *pack.Package) ActionResult {
 
 	if err := action.commit(pkg); err != nil {
 		actionResult.Status = ActionFailedStatus
-		actionResult.Error = fmt.Errorf("%w %w", ErrCommitAction, err)
+		actionResult.Error = fmt.Errorf("%w: %w", ErrCommitAction, err)
 		return actionResult
 	}
 
