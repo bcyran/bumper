@@ -6,7 +6,7 @@ require (
 	github.com/fatih/color v1.15.0
 	github.com/gosuri/uilive v0.0.4
 	github.com/h2non/gock v1.2.0
-	github.com/mattn/go-isatty v0.0.18
+	github.com/mattn/go-isatty v0.0.19
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	go.uber.org/config v1.4.0
