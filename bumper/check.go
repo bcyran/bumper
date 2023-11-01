@@ -32,7 +32,7 @@ func (result *checkActionResult) String() string {
 		return fmt.Sprintf("%s → %s", result.currentVersion, result.upstreamVersion)
 	} else if result.cmpResult == 0 {
 		return result.currentVersion.GetVersionStr()
-	} else {
+	} else { // nolint:revive
 		return fmt.Sprintf("%s < %s !", result.upstreamVersion, result.currentVersion)
 	}
 }
