@@ -7,7 +7,7 @@ import (
 )
 
 func NoHeaderMatcher(header string) gock.MatchFunc {
-	return func(request *http.Request, requestMock *gock.Request) (bool, error) {
+	return func(request *http.Request, _requestMock *gock.Request) (bool, error) {
 		return request.Header.Get(header) == "", nil
 	}
 }

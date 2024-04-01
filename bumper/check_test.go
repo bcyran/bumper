@@ -43,7 +43,7 @@ func (provider *fakeVersionProvider) Equal(_ interface{}) bool {
 }
 
 func TestCheckAction_Success(t *testing.T) {
-	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
+	verProvFactory := func(_url string, providersConfig config.Value) upstream.VersionProvider {
 		return &fakeVersionProvider{version: providersConfig.Get("fakeVersionProvider").String()}
 	}
 	action := NewCheckAction(verProvFactory, fakeVersionCheckConfig)
@@ -67,7 +67,7 @@ func TestCheckAction_Success(t *testing.T) {
 }
 
 func TestCheckAction_SuccessVersionOverride(t *testing.T) {
-	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
+	verProvFactory := func(_url string, _providersConfig config.Value) upstream.VersionProvider {
 		t.Error("provider should not be called when version override provided")
 		return nil
 	}
@@ -93,7 +93,7 @@ func TestCheckAction_SuccessVersionOverride(t *testing.T) {
 }
 
 func TestCheckAction_Skip(t *testing.T) {
-	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider { return nil }
+	verProvFactory := func(_url string, _providersConfig config.Value) upstream.VersionProvider { return nil }
 	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{
 		Srcinfo: &pack.Srcinfo{
@@ -111,7 +111,7 @@ func TestCheckAction_Skip(t *testing.T) {
 }
 
 func TestCheckAction_FailNoProvider(t *testing.T) {
-	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider { return nil }
+	verProvFactory := func(_url string, _providersConfig config.Value) upstream.VersionProvider { return nil }
 	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}}
 
@@ -124,7 +124,7 @@ func TestCheckAction_FailNoProvider(t *testing.T) {
 
 func TestCheckAction_FailProviderFailed(t *testing.T) {
 	expectedErr := "some random error"
-	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
+	verProvFactory := func(_url string, _providersConfig config.Value) upstream.VersionProvider {
 		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
 	action := NewCheckAction(verProvFactory, emptyCheckConfig)
@@ -140,7 +140,7 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 func TestCheckAction_FailChecksMultipleURLs(t *testing.T) {
 	expectedErr := "some random error"
 	checkedURLs := []string{}
-	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
+	verProvFactory := func(url string, _providersConfig config.Value) upstream.VersionProvider {
 		checkedURLs = append(checkedURLs, url)
 		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
 	}
@@ -163,7 +163,7 @@ func TestCheckAction_FailChecksMultipleURLs(t *testing.T) {
 }
 
 func TestCheckAction_FailInvalidVersionOverride(t *testing.T) {
-	verProvFactory := func(url string, providersConfig config.Value) upstream.VersionProvider {
+	verProvFactory := func(_url string, _providersConfig config.Value) upstream.VersionProvider {
 		t.Error("provider should not be called when version override provided")
 		return nil
 	}

@@ -97,7 +97,7 @@ enables you to run bumper in a dir containing multiple package dirs.`,
 		actions := createActions(doActions, bumperConfig)
 		runBumper(workDir, actions)
 	},
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	ValidArgsFunction: func(_cmd *cobra.Command, _args []string, _toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveFilterDirs
 	},
 }
@@ -111,7 +111,7 @@ func init() {
 	bumperCmd.Flags().StringVarP(&configPath, "config", "", "", "path to configuration file")
 	bumperCmd.Flags().StringVarP(&completion, "completion", "", "", "generate completion for shell: bash, zsh, fish")
 	bumperCmd.Flags().StringArrayVarP(&versionOverrides, "override", "o", []string{}, "override upstream version, format: package=version")
-	bumperCmd.RegisterFlagCompletionFunc("completion", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) { //nolint:errcheck
+	bumperCmd.RegisterFlagCompletionFunc("completion", func(_cmd *cobra.Command, _args []string, _toComplete string) ([]string, cobra.ShellCompDirective) { //nolint:errcheck
 		return []string{"bash", "zsh", "fish"}, cobra.ShellCompDirectiveDefault
 	})
 }

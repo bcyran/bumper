@@ -15,3 +15,10 @@ linters:
     - unconvert
     - unparam
     - whitespace
+
+linters-settings:
+  revive:
+    rules:
+      - name: unused-parameter
+        arguments:
+          - allowRegex: "^_.*"
