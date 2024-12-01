@@ -1,6 +1,7 @@
 package bumper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -123,9 +124,9 @@ func TestCheckAction_FailNoProvider(t *testing.T) {
 }
 
 func TestCheckAction_FailProviderFailed(t *testing.T) {
-	expectedErr := "some random error"
+	const expectedErr = "some random error"
 	verProvFactory := func(_url string, _providersConfig config.Value) upstream.VersionProvider {
-		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
+		return &fakeVersionProvider{err: errors.New(expectedErr)}
 	}
 	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{Srcinfo: &pack.Srcinfo{URL: "foo"}}
@@ -138,11 +139,11 @@ func TestCheckAction_FailProviderFailed(t *testing.T) {
 }
 
 func TestCheckAction_FailChecksMultipleURLs(t *testing.T) {
-	expectedErr := "some random error"
+	const expectedErr = "some random error"
 	checkedURLs := []string{}
 	verProvFactory := func(url string, _providersConfig config.Value) upstream.VersionProvider {
 		checkedURLs = append(checkedURLs, url)
-		return &fakeVersionProvider{err: fmt.Errorf(expectedErr)}
+		return &fakeVersionProvider{err: errors.New(expectedErr)}
 	}
 	action := NewCheckAction(verProvFactory, emptyCheckConfig)
 	pkg := pack.Package{

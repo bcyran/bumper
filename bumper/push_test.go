@@ -1,7 +1,7 @@
 package bumper
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/bcyran/bumper/internal/testutils"
@@ -100,9 +100,9 @@ func TestPushAction_FailGitError(t *testing.T) {
 	}
 
 	// mock return values for commands
-	expectedErr := "uh oh, git push failed"
+	const expectedErr = "uh oh, git push failed"
 	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte{}, Err: fmt.Errorf(expectedErr)}, // checking branch
+		{Stdout: []byte{}, Err: errors.New(expectedErr)}, // checking branch
 	}
 	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 

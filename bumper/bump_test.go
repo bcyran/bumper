@@ -1,7 +1,7 @@
 package bumper
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -119,9 +119,9 @@ func TestBumpAction_FailUpdpkgsums(t *testing.T) {
 	err := os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
 	require.Nil(t, err)
 
-	expectedErr := "omg, updpkgsums failed"
+	const expectedErr = "omg, updpkgsums failed"
 	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte{}, Err: fmt.Errorf(expectedErr)}, // retval for updpkgsums
+		{Stdout: []byte{}, Err: errors.New(expectedErr)}, // retval for updpkgsums
 	}
 	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 
@@ -139,10 +139,10 @@ func TestBumpAction_FailMakepkg(t *testing.T) {
 	err := os.WriteFile(pkg.PkgbuildPath(), []byte(pkgbuildString("", "")), 0o644)
 	require.Nil(t, err)
 
-	expectedErr := "oh no, poor makepkg error"
+	const expectedErr = "oh no, poor makepkg error"
 	commandRetvals := []testutils.CommandRunnerRetval{
 		{Stdout: []byte{}, Err: nil},                     // retval for updpkgsums
-		{Stdout: []byte{}, Err: fmt.Errorf(expectedErr)}, // retval for makepkg
+		{Stdout: []byte{}, Err: errors.New(expectedErr)}, // retval for makepkg
 	}
 	fakeCommandRunner, _ := testutils.MakeFakeCommandRunner(&commandRetvals)
 

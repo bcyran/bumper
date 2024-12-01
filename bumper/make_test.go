@@ -1,7 +1,7 @@
 package bumper
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/bcyran/bumper/internal/testutils"
@@ -68,9 +68,9 @@ func TestMakeAction_Fail(t *testing.T) {
 	}
 
 	// mock return value for run command
-	expectedErr := "oooh makepkg crashed"
+	const expectedErr = "oooh makepkg crashed"
 	commandRetvals := []testutils.CommandRunnerRetval{
-		{Stdout: []byte{}, Err: fmt.Errorf(expectedErr)},
+		{Stdout: []byte{}, Err: errors.New(expectedErr)},
 	}
 	fakeCommandRunner, commandRuns := testutils.MakeFakeCommandRunner(&commandRetvals)
 
