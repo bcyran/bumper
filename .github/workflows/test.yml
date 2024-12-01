@@ -14,8 +14,8 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: stable
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+      - name: Golangci-lint
+        uses: golangci/golangci-lint-action@v6.1.1
 
   test:
     name: Test Suite
