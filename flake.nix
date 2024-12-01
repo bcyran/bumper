@@ -31,6 +31,10 @@
             {
               languages.go.enable = true;
               scripts.dev-test.exec = "go test -v -covermode=atomic ./...";
+              scripts.dev-lint.exec = "golangci-lint run";
+              packages = with pkgs; [
+                golangci-lint
+              ];
             }
           ];
         };
