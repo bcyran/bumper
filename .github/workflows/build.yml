@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   build-release:
@@ -16,13 +16,13 @@ jobs:
         goarch:
           - amd64
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: stable
-      
+
       - name: Prepare build env
         run: |
           BINARY_DIR="out"
@@ -74,13 +74,13 @@ jobs:
           echo "PKG_ARTIFACT_PATH=${PKG_ARTIFACT_PATH}" >> ${GITHUB_ENV}
 
       - name: Upload the artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PKG_ARTIFACT_NAME }}
           path: ${{ env.PKG_ARTIFACT_PATH }}
 
       - name: Release the artifact
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startswith(github.ref, 'refs/tags/')
         with:
           draft: true
