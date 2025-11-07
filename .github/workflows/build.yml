@@ -74,7 +74,7 @@ jobs:
           echo "PKG_ARTIFACT_PATH=${PKG_ARTIFACT_PATH}" >> ${GITHUB_ENV}
 
       - name: Upload the artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.PKG_ARTIFACT_NAME }}
           path: ${{ env.PKG_ARTIFACT_PATH }}
