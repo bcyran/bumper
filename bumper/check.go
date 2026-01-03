@@ -28,11 +28,12 @@ func (result *checkActionResult) String() string {
 	if result.Status == ActionSkippedStatus {
 		return result.currentVersion.GetVersionStr()
 	}
-	if result.cmpResult == 1 {
+	switch result.cmpResult {
+	case 1:
 		return fmt.Sprintf("%s → %s", result.currentVersion, result.upstreamVersion)
-	} else if result.cmpResult == 0 {
+	case 0:
 		return result.currentVersion.GetVersionStr()
-	} else { // nolint:revive
+	default:
 		return fmt.Sprintf("%s < %s !", result.upstreamVersion, result.currentVersion)
 	}
 }

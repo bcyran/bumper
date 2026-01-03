@@ -43,7 +43,7 @@ func Rpmvercmp(a, b string) int {
 		}
 
 		// If we ran to the end of either strings, we are finished with the loop.
-		if !(aSegStart < len(a) && bSegStart < len(b)) {
+		if aSegStart >= len(a) || bSegStart >= len(b) {
 			break
 		}
 
