@@ -10,7 +10,7 @@ import (
 
 const srcinfoSeparator = " = "
 
-var requiredFields = []string{"pkgbase", "pkgname", "pkgver", "pkgrel", "url"}
+var requiredFields = []string{"pkgbase", "pkgver", "pkgrel", "url"}
 
 type rawSrcinfo map[string][]string
 
