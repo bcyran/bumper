@@ -32,6 +32,7 @@ var (
 	configPath       = ""
 	completion       = ""
 	versionOverrides = []string{}
+	debug            = false
 )
 
 var bumperCmd = &cobra.Command{
@@ -60,6 +61,10 @@ enables you to run bumper in a dir containing multiple package dirs.`,
   bumper ~/workspace/aur/my-package     bump single package`,
 	Version: "1.0.1",
 	Run: func(cmd *cobra.Command, args []string) {
+		if debug {
+			bumper.EnableDebugLogging()
+		}
+
 		if completion != "" {
 			generateCompletion(cmd, completion)
 			os.Exit(0)
@@ -111,6 +116,7 @@ func init() {
 	bumperCmd.Flags().StringVarP(&configPath, "config", "", "", "path to configuration file")
 	bumperCmd.Flags().StringVarP(&completion, "completion", "", "", "generate completion for shell: bash, zsh, fish")
 	bumperCmd.Flags().StringArrayVarP(&versionOverrides, "override", "o", []string{}, "override upstream version, format: package=version")
+	bumperCmd.Flags().BoolVarP(&debug, "debug", "", false, "enable debug logging")
 	bumperCmd.RegisterFlagCompletionFunc("completion", func(_cmd *cobra.Command, _args []string, _toComplete string) ([]string, cobra.ShellCompDirective) { //nolint:errcheck
 		return []string{"bash", "zsh", "fish"}, cobra.ShellCompDirectiveDefault
 	})
