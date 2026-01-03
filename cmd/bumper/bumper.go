@@ -59,7 +59,7 @@ enables you to run bumper in a dir containing multiple package dirs.`,
   bumper --bump=false                   find packages, check updates in $PWD
   bumper ~/workspace/aur                find and bump packages in given dir
   bumper ~/workspace/aur/my-package     bump single package`,
-	Version: "1.0.1",
+	Version: "1.0.2",
 	Run: func(cmd *cobra.Command, args []string) {
 		if debug {
 			bumper.EnableDebugLogging()
