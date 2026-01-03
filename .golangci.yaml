@@ -1,12 +1,9 @@
+version: "2"
 run:
   tests: true
-
 linters:
   enable:
     - errname
-    - gofmt
-    - gofumpt
-    - goimports
     - misspell
     - nilerr
     - predeclared
@@ -15,10 +12,31 @@ linters:
     - unconvert
     - unparam
     - whitespace
-
-linters-settings:
-  revive:
-    rules:
-      - name: unused-parameter
-        arguments:
-          - allowRegex: "^_.*"
+  settings:
+    revive:
+      rules:
+        - name: unused-parameter
+          arguments:
+            - allowRegex: ^_.*
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
