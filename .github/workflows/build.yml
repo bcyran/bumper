@@ -80,7 +80,7 @@ jobs:
           path: ${{ env.PKG_ARTIFACT_PATH }}
 
       - name: Release the artifact
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: startswith(github.ref, 'refs/tags/')
         with:
           draft: true
